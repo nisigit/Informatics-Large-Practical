@@ -5,13 +5,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Menu {
 
     @JsonProperty("name")
-    private String name;
+    public String name;
 
     @JsonProperty("priceInPence")
-    private int priceInPence;
+    public int priceInPence;
 
     public Menu() {
 
     }
-
 }
+
