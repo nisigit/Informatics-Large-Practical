@@ -11,6 +11,7 @@ public record LngLat(@JsonProperty("longitude") double lng, @JsonProperty("latit
 
     private static final double MOVE_LENGTH = 0.00015;
 
+    // TODO: Fix the algorithm so that edges and vertices of the central area are also considered.
     public boolean inCentralArea() throws IOException {
         ResponseFetcher responseFetcher = ResponseFetcher.getInstance();
         ArrayList<LngLat> centralVertices = responseFetcher.getCentralArea();

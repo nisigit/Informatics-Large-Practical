@@ -15,6 +15,14 @@ public class AppTest
     public static final double DISTANCE_TOLERANCE = 0.00015;
 
     @Test
+    public void inCentralAreaTest() throws IOException {
+        LngLat withinCentralArea = new LngLat(-3.19000, 55.944617);
+        LngLat outsideCentralArea = new LngLat(-4, 58);
+
+        assertTrue(withinCentralArea.inCentralArea());
+        assertFalse(outsideCentralArea.inCentralArea());
+    }
+    @Test
     public void distanceToTest() {
         LngLat point1 = new LngLat(0, 0);
         LngLat point2 = new LngLat(1, 0);
@@ -40,11 +48,23 @@ public class AppTest
     }
 
     @Test
-    public void inCentralAreaTest() throws IOException {
-        LngLat withinCentralArea = new LngLat(-3.19000, 55.944617);
-        LngLat outsideCentralArea = new LngLat(-4, 58);
+    public void nextPositionTest() {
+        LngLat initPoint = new LngLat(0, 0);
+        LngLat travellingPoint = new LngLat(0, 0);
 
-        assertTrue(withinCentralArea.inCentralArea());
-        assertFalse(outsideCentralArea.inCentralArea());
+        CompassDirection[] directionSequence1 = new CompassDirection[] {
+                CompassDirection.N,
+                CompassDirection.E,
+                CompassDirection.S,
+                CompassDirection.W
+        };
+
+        for (CompassDirection direction : directionSequence1) {
+            travellingPoint = travellingPoint.nextPosition(direction);
+        }
+
+        assertTrue(travellingPoint.closeTo(initPoint));
+
     }
+
 }
