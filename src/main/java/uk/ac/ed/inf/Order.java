@@ -74,7 +74,7 @@ public class Order {
             Menu[] menuItems = participant.getMenu();
             HashMap<String, Integer> restaurantMenu = new HashMap<>();
             for (Menu menuItem : menuItems) {
-                restaurantMenu.put(menuItem.name, menuItem.priceInPence);
+                restaurantMenu.put(menuItem.name(), menuItem.priceInPence());
             }
 
             // If all the items in the order are contained in a restaurant's menu.

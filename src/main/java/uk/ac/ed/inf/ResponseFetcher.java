@@ -12,23 +12,35 @@ import java.util.List;
  */
 public class ResponseFetcher {
 
-    //
+    // Object of the singleton class.
     private static ResponseFetcher responseFetcher = null;
 
+    // Constant to store the base url of the rest server.
     private static final String BASE_URL = "https://ilp-rest.azurewebsites.net/";
 
+    /**
+     * Class constructor.
+     */
     private ResponseFetcher() {
 
     }
 
+    /**
+     * Method to return the single instance of the ResponseFetcher singleton class.
+     * @return instance of the ResponseFetcher singleton class.
+     */
     public static ResponseFetcher getInstance() {
         if (responseFetcher == null) {
             responseFetcher = new ResponseFetcher();
         }
-
         return responseFetcher;
     }
 
+    /**
+     * Method to get an ArrayList of LngLat objects representing the vertices of the central area from the REST server
+     * @return An ArrayList of LngLat objects representing the vertices of the central area.
+     * @throws IOException
+     */
     public ArrayList<LngLat> getCentralArea() throws IOException {
         URL apiUrl = new URL(BASE_URL + "/centralarea");
         LngLat[] centralAreaVertices = new ObjectMapper().readValue(
@@ -37,6 +49,11 @@ public class ResponseFetcher {
         return new ArrayList<>(List.of(centralAreaVertices));
     }
 
+    /**
+     * Method to get an array of Order objects representing the orders fetched from the REST server.
+     * @return An array of Order objects representing the orders fetched from the REST server.
+     * @throws IOException
+     */
     public Order[] getOrders() throws IOException {
         URL apiUrl = new URL(BASE_URL + "/orders");
 

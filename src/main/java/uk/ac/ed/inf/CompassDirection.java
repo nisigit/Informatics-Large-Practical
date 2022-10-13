@@ -1,5 +1,8 @@
 package uk.ac.ed.inf;
 
+/**
+ * Enum to represent compass directions and the angle they would form with the positive (east-facing) x-axis (latitude).
+ */
 public enum CompassDirection {
     N(90),
     NNE(67.5),
@@ -18,7 +21,9 @@ public enum CompassDirection {
     NW(135),
     NNW(112.5);
 
+    // Field to store the angle a direction forms with the positive x-axis (longitude).
     private final double angle;
+
     CompassDirection(double angle) {
         this.angle = angle;
     }
