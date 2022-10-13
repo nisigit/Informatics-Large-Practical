@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.*;
 
+/**
+ * Represents an order placed by a user on the service.
+ */
 public class Order {
 
     @JsonProperty("orderNo")
@@ -34,6 +37,13 @@ public class Order {
 
     }
 
+    /**
+     * Method to get the total delivery cost of an order of pizzas.
+     * @param participants Array of restaurants participating in the service.
+     * @param orderedPizzas Array of name of the pizzas in the order.
+     * @return The total price of the order, including the delivery charge of 1 pound.
+     * @throws InvalidPizzaCombinationException If a pizza name is not found or if pizzas ordered are from different restaurants.
+     */
     public int getDeliveryCost(Restaurant[] participants, String[] orderedPizzas) throws InvalidPizzaCombinationException {
         // Hashmap to store items and their prices for the restaurant the order has been placed from.
         HashMap<String, Integer> orderRestaurantMenu = null;
@@ -44,7 +54,6 @@ public class Order {
         if (orderRestaurantMenu == null) {
             throw new InvalidPizzaCombinationException("Order item not found and/or order contains items from multiple restaurants");
         }
-
         int orderPriceInPence = 100; // Delivery charge of 100 pence (£1).
         for (String orderedPizza : orderedPizzas) {
             orderPriceInPence += orderRestaurantMenu.get(orderedPizza);
@@ -53,11 +62,17 @@ public class Order {
         return orderPriceInPence;
     }
 
+    /**
+     * Checks if a combination of ordered pizzas has been ordered from a single restaurant.
+     * @param participants Array of the restaurants participating in the service.
+     * @param orderedPizzasSet Set of the names of pizzas ordered.
+     * @return HashMap of the menu of the restaurant all the pizzas have been ordered from, in [item name -> price in pence]
+     *     format. Returns null if any pizzas are not in any restaurant's menu or if pizzas are from different menus.
+     */
     private HashMap<String, Integer> getValidRestaurant(Restaurant[] participants, Set<String> orderedPizzasSet) {
         for (Restaurant participant : participants) {
             Menu[] menuItems = participant.getMenu();
             HashMap<String, Integer> restaurantMenu = new HashMap<>();
-
             for (Menu menuItem : menuItems) {
                 restaurantMenu.put(menuItem.name, menuItem.priceInPence);
             }
@@ -67,7 +82,6 @@ public class Order {
                 return restaurantMenu;
             }
         }
-
         // No single restaurant menu contains all the items in the order.
         return null;
     }

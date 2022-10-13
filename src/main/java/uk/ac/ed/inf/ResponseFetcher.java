@@ -7,8 +7,12 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Singleton class to fetch responses from the REST server.
+ */
 public class ResponseFetcher {
 
+    //
     private static ResponseFetcher responseFetcher = null;
 
     private static final String BASE_URL = "https://ilp-rest.azurewebsites.net/";
