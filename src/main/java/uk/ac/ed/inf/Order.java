@@ -44,11 +44,10 @@ public class Order {
      * @return The total price of the order, including the delivery charge of 1 pound.
      * @throws InvalidPizzaCombinationException If a pizza name is not found or if pizzas ordered are from different restaurants.
      */
-    public int getDeliveryCost(Restaurant[] participants, String[] orderedPizzas) throws InvalidPizzaCombinationException {
+    public int getDeliveryCost(Restaurant[] participants, ArrayList<String> orderedPizzas) throws InvalidPizzaCombinationException {
         // Hashmap to store items and their prices for the restaurant the order has been placed from.
         HashMap<String, Integer> orderRestaurantMenu = null;
-        Set<String> orderedPizzasSet = new HashSet<>(Arrays.asList(orderedPizzas));
-        orderRestaurantMenu = this.getValidRestaurant(participants, orderedPizzasSet);
+        orderRestaurantMenu = this.getValidRestaurant(participants, new HashSet<>(orderedPizzas));
 
         // Either the ordered items are from menus of different restaurants or at least one item does not exist.
         if (orderRestaurantMenu == null) {

@@ -25,14 +25,25 @@ public record LngLat(@JsonProperty("longitude") double lng, @JsonProperty("latit
         ResponseFetcher responseFetcher = ResponseFetcher.getInstance();
         ArrayList<LngLat> centralVertices = responseFetcher.getCentralArea();
         int numPoints = centralVertices.size();
+
+        // Number of times a ray to the right (east) from the point intercepts an edge of the area.
+        // If interceptions are odd, point is inside, else outside.
         boolean result = false;
 
         for (int i = 0, j = numPoints - 1; i < numPoints; j = i++) {
-            boolean wl = (centralVertices.get(i).lat > this.lat) != (centralVertices.get(j).lat > this.lat);
+            // If point is on one of the edges/vertices, then it is inside the central area.
+            if (this.distanceTo(centralVertices.get(i)) + this.distanceTo(centralVertices.get(j)) ==
+                                centralVertices.get(i).distanceTo(centralVertices.get(j))) {
+                return true;
+            }
 
-            boolean sm = (this.lng < (centralVertices.get(j).lng - centralVertices.get(i).lng) * (this.lat - centralVertices.get(i).lat) / (centralVertices.get(j).lat - centralVertices.get(i).lat) + centralVertices.get(i).lng);
-
-            if (wl && sm) {
+            // Whether the latitude of vertice is north of this point and that of the other is south.
+            boolean isNorthSouth = (centralVertices.get(i).lat > this.lat) != (centralVertices.get(j).lat > this.lat);
+            // Whether the edge will intersect a ray towards positive x-axis (east) of the point.
+            boolean eastIntersect = (this.lng < (centralVertices.get(j).lng - centralVertices.get(i).lng) *
+                    (this.lat - centralVertices.get(i).lat) /
+                    (centralVertices.get(j).lat - centralVertices.get(i).lat) + centralVertices.get(i).lng);
+            if (isNorthSouth && eastIntersect) {
                 result = !result;
             }
         }
