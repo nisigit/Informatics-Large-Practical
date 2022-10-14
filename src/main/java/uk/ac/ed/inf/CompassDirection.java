@@ -24,10 +24,21 @@ public enum CompassDirection {
     // Field to store the angle a direction forms with the positive x-axis (longitude).
     private final double angle;
 
+    /**
+     * Enum constructor.
+     * @param angle angle between the direction represented by the CompassDirection enum constant
+     *              and the x-axis (east direction).
+     */
     CompassDirection(double angle) {
         this.angle = angle;
     }
 
+    /**
+     * Method to get the angle (in degrees) formed between the direction represented by the
+     * CompassDirection enum constant and the x-axis (east direction).
+     * @return The angle between x-axis (east direction) and the direction represented
+     * by the enum.
+     */
     public double getAngle() {
         return angle;
     }

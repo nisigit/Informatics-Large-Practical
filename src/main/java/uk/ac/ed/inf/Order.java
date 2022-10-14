@@ -9,30 +9,41 @@ import java.util.*;
  */
 public class Order {
 
+    // String to store the order number of the order.
     @JsonProperty("orderNo")
     private String orderNo;
 
+    // String to store the date of the order.
     @JsonProperty("orderDate")
     private String orderDate;
 
+    // String to store the customer name of the order.
     @JsonProperty("customer")
     private String customer;
 
+    // String to store the credit card number of the order.
     @JsonProperty("creditCardNumber")
     private String creditCardNumber;
 
+    // String to store the credit card expiry date of the order.
     @JsonProperty("creditCardExpiry")
     private String creditCardExpiry;
 
+    // String to store the credit card CVV of the order
     @JsonProperty("cvv")
     private String cvv;
 
+    // String to store the total price in pence of the order.
     @JsonProperty("priceTotalInPence")
     private int priceTotalInPence;
 
+    // Array of strings to store the names of the items in the order.
     @JsonProperty("orderItems")
     private String[] orderItems;
 
+    /**
+     * Class constructor.
+     */
     public Order() {
 
     }
@@ -42,7 +53,8 @@ public class Order {
      * @param participants Array of restaurants participating in the service.
      * @param orderedPizzas Array of name of the pizzas in the order.
      * @return The total price of the order, including the delivery charge of 1 pound.
-     * @throws InvalidPizzaCombinationException If a pizza name is not found or if pizzas ordered are from different restaurants.
+     * @throws InvalidPizzaCombinationException If a pizza in the order is not found or if pizzas ordered
+     * are from different restaurants.
      */
     public int getDeliveryCost(Restaurant[] participants, ArrayList<String> orderedPizzas) throws InvalidPizzaCombinationException {
         // Hashmap to store items and their prices for the restaurant the order has been placed from.

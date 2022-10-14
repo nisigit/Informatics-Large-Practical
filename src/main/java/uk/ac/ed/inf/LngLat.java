@@ -14,6 +14,10 @@ import java.util.ArrayList;
 @JsonIgnoreProperties("name")
 public record LngLat(@JsonProperty("longitude") double lng, @JsonProperty("latitude") double lat) {
 
+    /**
+     * Constant to store the distance (in degrees) that the drone covers in one move. Also, a measure
+     * to check if if two points are close to each other.
+     */
     private static final double MOVE_LENGTH = 0.00015;
 
     /**
@@ -26,7 +30,7 @@ public record LngLat(@JsonProperty("longitude") double lng, @JsonProperty("latit
         ArrayList<LngLat> centralVertices = responseFetcher.getCentralArea();
         int numPoints = centralVertices.size();
 
-        // Number of times a ray to the right (east) from the point intercepts an edge of the area.
+        // Number of times a ray to the right (east) from the point intercepts an edge of the area (odd or eve).
         // If interceptions are odd, point is inside, else outside.
         boolean result = false;
 
