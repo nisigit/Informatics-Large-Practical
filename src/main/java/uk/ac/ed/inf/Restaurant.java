@@ -44,7 +44,7 @@ public class Restaurant {
 
     /**
      * Method to fetch the list of participating restaurants in the service.
-     * @param serverBaseAddress Base URL of the rest server.
+     * @param serverBaseAddress Base URL of the rest server to fetch all the restaurants' data.
      * @return Array of Restaurant objects representing a participating restaurant in the service.
      * @throws IOException
      */

@@ -50,8 +50,10 @@ public class Order {
 
     /**
      * Method to get the total delivery cost of an order of pizzas.
-     * @param participants Array of restaurants participating in the service.
-     * @param orderedPizzas Array of name of the pizzas in the order.
+     * @param participants Array of restaurants participating in the service, so that ordered pizzas can be
+     *                     searched for in their menus.
+     * @param orderedPizzas Array of the names of the pizzas ordered so that pizzas can be searched for
+     *                      in the restaurant menus and total price can be calculated.
      * @return The total price of the order, including the delivery charge of 1 pound.
      * @throws InvalidPizzaCombinationException If a pizza in the order is not found or if pizzas ordered
      * are from different restaurants.
@@ -75,10 +77,12 @@ public class Order {
 
     /**
      * Checks if a combination of ordered pizzas has been ordered from a single restaurant.
-     * @param participants Array of the restaurants participating in the service.
-     * @param orderedPizzasSet Set of the names of pizzas ordered.
+     * @param participants Array of the restaurants participating in the service so that ordered pizzas can be
+     *                     searched for in their menus
+     * @param orderedPizzasSet Set of the names of pizzas ordered so that the pizzas can be searched for in restaurant
+     *                         menus and total price can be calculated.
      * @return HashMap of the menu of the restaurant all the pizzas have been ordered from, in [item name -> price in pence]
-     *     format. Returns null if any pizzas are not in any restaurant's menu or if pizzas are from different menus.
+     *     key-value pairs. Returns null if any pizzas are not in any restaurant's menu or if pizzas are from different menus.
      */
     private HashMap<String, Integer> getValidRestaurant(Restaurant[] participants, Set<String> orderedPizzasSet) {
         for (Restaurant participant : participants) {

@@ -16,7 +16,7 @@ public class ResponseFetcher {
     private static ResponseFetcher responseFetcher = null;
 
     // Constant to store the base url of the rest server.
-    private static final String BASE_URL = "https://ilp-rest.azurewebsites.net/";
+    private static final String BASE_URL = "https://ilp-rest.azurewebsites.net";
 
     /**
      * Class constructor.

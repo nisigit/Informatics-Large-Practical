@@ -44,9 +44,9 @@ public record LngLat(@JsonProperty("longitude") double lng, @JsonProperty("latit
             // Whether the latitude of vertice is north of this point and that of the other is south.
             boolean isNorthSouth = (centralVertices.get(i).lat > this.lat) != (centralVertices.get(j).lat > this.lat);
             // Whether the edge will intersect a ray towards positive x-axis (east) of the point.
-            boolean eastIntersect = (this.lng < (centralVertices.get(j).lng - centralVertices.get(i).lng) *
-                    (this.lat - centralVertices.get(i).lat) /
-                    (centralVertices.get(j).lat - centralVertices.get(i).lat) + centralVertices.get(i).lng);
+            boolean eastIntersect = (this.lng < ((centralVertices.get(j).lng - centralVertices.get(i).lng) *
+                    (this.lat - centralVertices.get(i).lat) / (centralVertices.get(j).lat - centralVertices.get(i).lat)) +
+                    centralVertices.get(i).lng);
             if (isNorthSouth && eastIntersect) {
                 result = !result;
             }
@@ -67,7 +67,7 @@ public record LngLat(@JsonProperty("longitude") double lng, @JsonProperty("latit
 
     /**
      * Method to return whether the current point and another point are within 0.00015 degrees of each other
-     * @param otherPoint the point the with which closeness is being calculated to.
+     * @param otherPoint the point with which the closeness is being calculated to.
      * @return True if the current point is within 0.00015 degrees of the other point. False otherwise.
      */
     public boolean closeTo(LngLat otherPoint) {
@@ -78,7 +78,7 @@ public record LngLat(@JsonProperty("longitude") double lng, @JsonProperty("latit
     /**
      * Method to return a new LngLat object which represents the new position of the drone after moving 1 move length
      * (0.00015 degrees) from its current position in the given compass direction.
-     * @param compassDirection direction in which the drone is moving.
+     * @param compassDirection the direction in which the drone is moving.
      * @return A new LngLat object representing the new position of the drone after moving in the given direction.
      */
     public LngLat nextPosition(CompassDirection compassDirection) {

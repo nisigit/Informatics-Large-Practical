@@ -26,8 +26,8 @@ public enum CompassDirection {
 
     /**
      * Enum constructor.
-     * @param angle angle between the direction represented by the CompassDirection enum constant
-     *              and the x-axis (east direction).
+     * @param angle angle (in degrees) between the direction represented by the CompassDirection enum
+     *              constant and the x-axis (east direction).
      */
     CompassDirection(double angle) {
         this.angle = angle;
