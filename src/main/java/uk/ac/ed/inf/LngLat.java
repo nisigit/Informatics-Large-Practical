@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * Record to represent a point/coordinate.
+ * Record to represent a point/position.
  * @param lng to represent to longitude of the point
  * @param lat to represent the latitude of the point
  */
@@ -30,10 +30,11 @@ public record LngLat(@JsonProperty("longitude") double lng, @JsonProperty("latit
         ArrayList<LngLat> centralVertices = responseFetcher.getCentralArea();
         int numPoints = centralVertices.size();
 
-        // Number of times a ray to the right (east) from the point intercepts an edge of the area (odd or eve).
-        // If interceptions are odd, point is inside, else outside.
+        // Number of times a ray to the right (east) from the point intercepts an edge of the area
+        // (odd or even). If interceptions are odd, point is inside, else outside.
         boolean result = false;
 
+        // Loop to check if the number of edges a ray from given point intercepts is odd or even.
         for (int i = 0, j = numPoints - 1; i < numPoints; j = i++) {
             // If point is on one of the edges/vertices, then it is inside the central area.
             if (this.distanceTo(centralVertices.get(i)) + this.distanceTo(centralVertices.get(j)) ==
