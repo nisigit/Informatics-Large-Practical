@@ -2,6 +2,10 @@ package uk.ac.ed.inf;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -11,11 +15,11 @@ public class Order {
 
     // String to store the order number of the order.
     @JsonProperty("orderNo")
-    private String orderNo;
+    public String orderNo;
 
     // String to store the date of the order.
     @JsonProperty("orderDate")
-    private String orderDate;
+    public String orderDate;
 
     // String to store the customer name of the order.
     @JsonProperty("customer")
@@ -35,11 +39,16 @@ public class Order {
 
     // String to store the total price in pence of the order.
     @JsonProperty("priceTotalInPence")
-    private int priceTotalInPence;
+    public int priceTotalInPence;
 
     // Array of strings to store the names of the items in the order.
     @JsonProperty("orderItems")
     private String[] orderItems;
+
+    // Restaurant instance of the restaurant that the order is from.
+    private Restaurant orderRestaurant;
+
+    private OrderOutcome orderOutcome;
 
     /**
      * Class constructor.
@@ -48,57 +57,126 @@ public class Order {
 
     }
 
-    /**
-     * Method to get the total delivery cost of an order of pizzas.
-     * @param participants Array of restaurants participating in the service, so that ordered pizzas can be
-     *                     searched for in their menus.
-     * @param orderedPizzas Array of the names of the pizzas ordered so that pizzas can be searched for
-     *                      in the restaurant menus and total price can be calculated.
-     * @return The total price of the order, including the delivery charge of 1 pound.
-     * @throws InvalidPizzaCombinationException If a pizza in the order is not found or if pizzas ordered
-     * are from different restaurants.
-     */
-    public int getDeliveryCost(Restaurant[] participants, ArrayList<String> orderedPizzas) throws InvalidPizzaCombinationException {
-        // Hashmap to store items and their prices for the restaurant the order has been placed from.
-        HashMap<String, Integer> orderRestaurantMenu = null;
-        orderRestaurantMenu = this.getValidRestaurant(participants, new HashSet<>(orderedPizzas));
-
-        // Either the ordered items are from menus of different restaurants or at least one item does not exist.
-        if (orderRestaurantMenu == null) {
-            throw new InvalidPizzaCombinationException("Order item not found and/or order contains items from multiple restaurants");
+    public int getDeliveryCost(Restaurant[] participants) {
+        if (this.orderRestaurant == null) {
+            if (this.orderOutcome == null) {
+                throw new IllegalArgumentException("Check if order is valid before getting delivery cost");
+            } else {
+                throw new IllegalArgumentException("Order is invalid");
+            }
         }
-        int orderPriceInPence = 100; // Delivery charge of 100 pence (£1).
-        for (String orderedPizza : orderedPizzas) {
-            orderPriceInPence += orderRestaurantMenu.get(orderedPizza);
+        int deliveryCost = 100; // Delivery cost is £1 (100 pence).
+        HashMap<String, Integer> restaurantMenu = this.orderRestaurant.getMenuItemPrices();
+        for (String item : this.orderItems) {
+            deliveryCost += restaurantMenu.get(item);
         }
 
-        return orderPriceInPence;
+        return deliveryCost;
+    }
+
+    private boolean areItemsValid(Restaurant[] participants) throws IOException {
+        HashSet<String> allPizzas = new HashSet<>();
+        for (Restaurant restaurant : participants) {
+            HashMap<String, Integer> restaurantMenu = restaurant.getMenuItemPrices();
+            if (restaurantMenu.keySet().containsAll(Arrays.asList(this.orderItems))) {
+                this.orderRestaurant = restaurant;
+                return true;
+            }
+            allPizzas.addAll(restaurantMenu.keySet());
+        }
+
+        // If at least one order item is not in any restaurant's menu.
+        if (allPizzas.containsAll(Arrays.asList(this.orderItems))) {
+            this.orderOutcome = OrderOutcome.InvalidPizzaCountMultipleSuppliers;
+        } else {
+            this.orderOutcome = OrderOutcome.InvalidPizzaNotDefined;
+        }
+        return false;
+    }
+
+    public boolean isOrderValid() throws IOException {
+        // The number of pizzas ordered must be greater than 0 and up to 5.
+        if (this.orderItems.length < 1 || this.orderItems.length > 5) {
+            this.orderOutcome = OrderOutcome.InvalidPizzaCount;
+            return false;
+        }
+
+        if (!(this.isCardCvvValid() && this.isCardExpiryValid() && this.isCardNumberValid())) {
+            return false;
+        }
+
+        Restaurant[] participants = ResponseFetcher.getInstance().getRestaurants();
+
+        if (!this.areItemsValid(participants)) {
+            return false;
+        }
+
+        if (this.getDeliveryCost(participants) != this.priceTotalInPence) {
+            this.orderOutcome = OrderOutcome.InvalidTotal;
+            return false;
+        }
+
+        return true;
     }
 
     /**
-     * Checks if a combination of ordered pizzas has been ordered from a single restaurant.
-     * @param participants Array of the restaurants participating in the service so that ordered pizzas can be
-     *                     searched for in their menus
-     * @param orderedPizzasSet Set of the names of pizzas ordered so that the pizzas can be searched for in restaurant
-     *                         menus and total price can be calculated.
-     * @return HashMap of the menu of the restaurant all the pizzas have been ordered from, in [item name -> price in pence]
-     *     key-value pairs. Returns null if any pizzas are not in any restaurant's menu or if pizzas are from different menus.
+     * Method to check if the expiry date of the credit card is of a
+     * valid format and is not before the order date.
+     * @return True if the expiry date is valid, false otherwise.
      */
-    private HashMap<String, Integer> getValidRestaurant(Restaurant[] participants, Set<String> orderedPizzasSet) {
-        for (Restaurant participant : participants) {
-            Menu[] menuItems = participant.getMenu();
-            HashMap<String, Integer> restaurantMenu = new HashMap<>();
-            for (Menu menuItem : menuItems) {
-                restaurantMenu.put(menuItem.name(), menuItem.priceInPence());
-            }
-
-            // If all the items in the order are contained in a restaurant's menu.
-            if (restaurantMenu.keySet().containsAll(orderedPizzasSet)) {
-                return restaurantMenu;
-            }
+    private boolean isCardExpiryValid() {
+        // Credit card expiry date must be in the format MM/YY and only contain digits.
+        if (this.creditCardExpiry.length() != 5 ||
+                !this.creditCardExpiry.matches("([0-9]{2})/([0-9]{2})")) {
+            this.orderOutcome = OrderOutcome.InvalidExpiryDate;
+            return false;
         }
-        // No single restaurant menu contains all the items in the order.
-        return null;
+
+        String[] expiryMonthYear = this.creditCardExpiry.split("/");
+        int month = Integer.parseInt(expiryMonthYear[0]);
+        if (month < 1 || month > 12) {
+            this.orderOutcome = OrderOutcome.InvalidExpiryDate;
+            return false;
+        }
+
+        YearMonth expiryYearMonth = YearMonth.parse(this.creditCardExpiry, DateTimeFormatter.ofPattern("MM/yy"));
+        LocalDate expiryDate = expiryYearMonth.atEndOfMonth();
+        LocalDate orderDate = LocalDate.parse(this.orderDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+        // Card is expired if the expiry date is before the order date.
+        if (orderDate.isAfter(expiryDate)) {
+            this.orderOutcome = OrderOutcome.InvalidExpiryDate;
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Method to check if credit card number of an order is valid.
+     * @return True if the credit card number is valid, false otherwise.
+     */
+    private boolean isCardNumberValid() {
+        // Credit card number should be 13 to 16 digits long and only contain digits.
+        if (this.creditCardNumber.length() < 13 ||
+                this.creditCardNumber.length() > 16 ||
+                !this.creditCardNumber.matches("[0-9]+")) {
+            this.orderOutcome = OrderOutcome.InvalidCardNumber;
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Method to check if Card CVV in the order is valid.
+     * @return true if the CVV is valid, false otherwise.
+     */
+    private boolean isCardCvvValid() {
+        // Credit card CVV should be 3 digits long and only contain digits.
+        if (!this.cvv.matches("^[0-9]{3,4}$")) {
+            this.orderOutcome = OrderOutcome.InvalidCvv;
+            return false;
+        }
+        return true;
     }
 
 }

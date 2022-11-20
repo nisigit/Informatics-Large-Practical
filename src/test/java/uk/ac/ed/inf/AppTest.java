@@ -87,28 +87,28 @@ public class AppTest
     }
 
 
-    @Test
-    public void getDeliveryCostTest() throws IOException, InvalidPizzaCombinationException {
-        Restaurant[] restaurants = Restaurant.getRestaurantsFromRestServer(new URL("https://ilp-rest.azurewebsites.net"));
-        Order order = new Order();
+//    @Test
+//    public void getDeliveryCostTest() throws IOException, InvalidPizzaCombinationException {
+//        Restaurant[] restaurants = Restaurant.getRestaurantsFromRestServer(new URL("https://ilp-rest.azurewebsites.net"));
+//        Order order = new Order();
+//
+//        ArrayList<String> orderItems1 = new ArrayList<>(List.of("Margarita", "Calzone"));
+//        int price1 = order.getDeliveryCost(restaurants, orderItems1);
+//        assertEquals(price1, 2500, 0.0);
+//
+//
+//        ArrayList<String> orderItems2 = new ArrayList<>(List.of("Proper Pizza", "Pineapple & Ham & Cheese"));
+//        int price2 = order.getDeliveryCost(restaurants, orderItems2);
+//        assertEquals(price2, 2400, 0.0);
+//    }
 
-        ArrayList<String> orderItems1 = new ArrayList<>(List.of("Margarita", "Calzone"));
-        int price1 = order.getDeliveryCost(restaurants, orderItems1);
-        assertEquals(price1, 2500, 0.0);
-
-
-        ArrayList<String> orderItems2 = new ArrayList<>(List.of("Proper Pizza", "Pineapple & Ham & Cheese"));
-        int price2 = order.getDeliveryCost(restaurants, orderItems2);
-        assertEquals(price2, 2400, 0.0);
-    }
-
-    @Test(expected = InvalidPizzaCombinationException.class)
-    public void invalidPizzaDeliveryCostTest() throws InvalidPizzaCombinationException, IOException {
-        Restaurant[] restaurants = Restaurant.getRestaurantsFromRestServer(new URL("https://ilp-rest.azurewebsites.net"));
-        Order order = new Order();
-
-        ArrayList<String> orderItems = new ArrayList<>(List.of("Margarita", "Vegan Delight"));
-        int price = order.getDeliveryCost(restaurants, orderItems);
-    }
+//    @Test(expected = InvalidPizzaCombinationException.class)
+//    public void invalidPizzaDeliveryCostTest() throws InvalidPizzaCombinationException, IOException {
+//        Restaurant[] restaurants = Restaurant.getRestaurantsFromRestServer(new URL("https://ilp-rest.azurewebsites.net"));
+//        Order order = new Order();
+//
+//        ArrayList<String> orderItems = new ArrayList<>(List.of("Margarita", "Vegan Delight"));
+//        int price = order.getDeliveryCost(restaurants, orderItems);
+//    }
 
 }

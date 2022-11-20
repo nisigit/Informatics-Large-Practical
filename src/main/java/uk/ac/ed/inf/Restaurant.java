@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
 
 /**
  * Class to represent a participating restaurant in the service.
@@ -27,6 +28,9 @@ public class Restaurant {
     @JsonProperty("menu")
     public Menu[] menuItems;
 
+    // HashMap to store the menu items and their prices in the menu of the restaurant.
+    private HashMap<String, Integer> menuItemPrices;
+
     /**
      * Class constructor.
      */
@@ -35,18 +39,43 @@ public class Restaurant {
     }
 
     /**
+     * Method to get HashMap of menu items and their prices in the menu of the
+     * @return HashMap of menu items and their prices in the menu of the
+     */
+    public HashMap<String, Integer> getMenuItemPrices() {
+        if (menuItemPrices == null) {
+            menuItemPrices = new HashMap<>();
+            for (Menu menuItem : menuItems) {
+                menuItemPrices.put(menuItem.name(), menuItem.priceInPence());
+            }
+        }
+        return menuItemPrices;
+    }
+
+
+    /**
      * Method to get the menu of the restaurant.
-     * @return An array of Menu instances representing items in the restaurant's menu.
+     * @return An array of Menu instances representing items in the restaurant's menu
      */
     public Menu[] getMenu() {
+        if (menuItemPrices == null) {
+            menuItemPrices = new HashMap<>();
+            for (Menu menuItem : this.menuItems) {
+                menuItemPrices.put(menuItem.name(), menuItem.priceInPence());
+            }
+        }
         return menuItems;
     }
 
     /**
      * Method to fetch the list of participating restaurants in the service.
-     * @param serverBaseAddress Base URL of the rest server to fetch all the restaurants' data.
-     * @return Array of Restaurant objects representing a participating restaurant in the service.
-     * @throws IOException
+     * 
+     * @param serverBaseAddress Base URL of the rest server to fetch all the
+     *                          restaurants' data.
+     * @return Array of Restaurant objects representing a participating restaurant
+     *         in the service.
+     * @throws IOException If the REST server is not available or base url is
+     *                     invalid.
      */
     public static Restaurant[] getRestaurantsFromRestServer(URL serverBaseAddress) throws IOException {
         String endPoint = "";

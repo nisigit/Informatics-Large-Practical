@@ -13,10 +13,12 @@ import java.util.List;
 public class ResponseFetcher {
 
     // Object of the singleton class.
-    private static ResponseFetcher responseFetcher = null;
+    private static ResponseFetcher responseFetcher;
 
-    // Constant to store the base url of the rest server.
-    private static final String BASE_URL = "https://ilp-rest.azurewebsites.net";
+    // Field to store the base url of the REST server.
+    private String baseUrl;
+
+    private Restaurant[] participants;
 
     /**
      * Class constructor.
@@ -37,12 +39,23 @@ public class ResponseFetcher {
     }
 
     /**
+     * Method to set the base url of the REST server.
+     * @param baseUrl String containing the base url of the REST server.
+     */
+    public void setBaseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
+    }
+
+    /**
      * Method to get an ArrayList of LngLat objects representing the vertices of the central area from the REST server
      * @return An ArrayList of LngLat objects representing the vertices of the central area.
-     * @throws IOException
+     * @throws IOException If the REST server is not available or base url is invalid.
      */
     public ArrayList<LngLat> getCentralArea() throws IOException {
-        URL apiUrl = new URL(BASE_URL + "/centralarea");
+        if (baseUrl == null) {
+            throw new IOException("Base url not set");
+        }
+        URL apiUrl = new URL(baseUrl + "/centralarea");
         LngLat[] centralAreaVertices = new ObjectMapper().readValue(
                 apiUrl, LngLat[].class);
 
@@ -52,13 +65,39 @@ public class ResponseFetcher {
     /**
      * Method to get an array of Order objects representing the orders fetched from the REST server.
      * @return An array of Order objects representing the orders fetched from the REST server.
-     * @throws IOException
+     * @throws IOException If the REST server is not running or the base url is invalid.
      */
     public Order[] getOrders() throws IOException {
-        URL apiUrl = new URL(BASE_URL + "/orders");
+        // Throw exception if baseUrl is not set
+        if (baseUrl == null) {
+            throw new IllegalArgumentException("Base url not set");
+        }
+
+        URL apiUrl = new URL(baseUrl + "/orders");
 
         return new ObjectMapper().readValue(
                 apiUrl, Order[].class);
     }
 
+
+    /**
+     * Method to get an array of Restaurant objects representing the restaurants fetched from the REST server.
+     * @return An array of Restaurant objects representing the restaurants fetched from the REST server.
+     * @throws IOException If the REST server is not running or the base url is invalid.
+     */
+    public Restaurant[] getRestaurants() throws IOException {
+        // Throw exception if baseUrl is not set
+        if (participants != null) {
+            return participants;
+        }
+        if (baseUrl == null) {
+            throw new IllegalArgumentException("Base url not set");
+        }
+
+        URL apiUrl = new URL(baseUrl + "restaurants");
+
+        participants =  new ObjectMapper().readValue(
+                apiUrl, Restaurant[].class);
+        return participants;
+    }
 }
