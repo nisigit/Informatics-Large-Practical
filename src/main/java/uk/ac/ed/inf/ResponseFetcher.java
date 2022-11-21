@@ -86,16 +86,16 @@ public class ResponseFetcher {
      * @throws IOException If the REST server is not running or the base url is invalid.
      */
     public Restaurant[] getRestaurants() throws IOException {
-        // Throw exception if baseUrl is not set
         if (participants != null) {
             return participants;
         }
+
+        // Throw exception if baseUrl is not set
         if (baseUrl == null) {
             throw new IllegalArgumentException("Base url not set");
         }
 
         URL apiUrl = new URL(baseUrl + "restaurants");
-
         participants =  new ObjectMapper().readValue(
                 apiUrl, Restaurant[].class);
         return participants;

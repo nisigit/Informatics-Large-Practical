@@ -17,6 +17,12 @@ public class AppTest
 
     public static final double DISTANCE_TOLERANCE = 0.00015;
 
+    public final ResponseFetcher responseFetcher;
+    public AppTest() {
+        responseFetcher = ResponseFetcher.getInstance();
+        responseFetcher.setBaseUrl("https://ilp-rest.azurewebsites.net/");
+    }
+
     /**
      * Test for the inCentralArea() method in the LngLat record.
      * @throws IOException

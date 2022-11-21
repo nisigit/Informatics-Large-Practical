@@ -74,7 +74,14 @@ public class Order {
         return deliveryCost;
     }
 
-    private boolean areItemsValid(Restaurant[] participants) throws IOException {
+    /**
+     * Method to check if the items in the order are valid. If the items are valid, the method
+     * sets the restaurant of the order to the restaurant that the items are from.
+     * @param participants An array of Restaurant instances representing the restaurants that are
+     *                     participating in the service.
+     * @return True if the items in the order are valid, false otherwise.
+     */
+    private boolean areItemsValid(Restaurant[] participants) {
         HashSet<String> allPizzas = new HashSet<>();
         for (Restaurant restaurant : participants) {
             HashMap<String, Integer> restaurantMenu = restaurant.getMenuItemPrices();
