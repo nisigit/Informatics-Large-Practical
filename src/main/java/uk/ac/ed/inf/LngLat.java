@@ -20,7 +20,7 @@ public record LngLat(@JsonProperty("longitude") double lng, @JsonProperty("latit
     private static final double MOVE_LENGTH = 0.00015;
 
     /**
-     * Method to check if the current LngLat point is close inside a polyon.
+     * Method to check if the current LngLat point is close inside a polygon.
      * @param polygon An array of LngLat objects representing the vertices of the polygon.
      * @return true if the current LngLat point is inside the polygon, false otherwise.
      */
@@ -33,7 +33,7 @@ public record LngLat(@JsonProperty("longitude") double lng, @JsonProperty("latit
                     polygon[i].distanceTo(polygon[j])) {
                 return true;
             }
-            // Whether the latitude of vertice is north of this point and that of the other is south.
+            // Whether the latitude of vertex is north of this point and that of the other is south.
             boolean isNorthSouth = (polygon[i].lat > this.lat) != (polygon[j].lat > this.lat);
             // Whether the edge will intersect a ray towards positive x-axis (east) of the point.
             boolean eastIntersect = (this.lng < ((polygon[j].lng - polygon[i].lng) *
@@ -52,7 +52,7 @@ public record LngLat(@JsonProperty("longitude") double lng, @JsonProperty("latit
      * @throws IOException If the REST server is not available or base url is invalid.
      */
     public boolean inCentralArea() throws IOException {
-        LngLat[] centralVertices = ResponseFetcher.getInstance().getCentralArea();
+        LngLat[] centralVertices = ResponseFetcher.getInstance().getCentralAreaFromRestServer();
         return this.inPolygon(centralVertices);
     }
 
@@ -63,7 +63,7 @@ public record LngLat(@JsonProperty("longitude") double lng, @JsonProperty("latit
      */
     public boolean inNoFlyZone() throws IOException {
         ResponseFetcher responseFetcher = ResponseFetcher.getInstance();
-        NoFlyZone[] noFlyZones = responseFetcher.getNoFlyZones();
+        NoFlyZone[] noFlyZones = responseFetcher.getNoFlyZonesFromRestServer();
         for (NoFlyZone noFlyZone : noFlyZones) {
             if (this.inPolygon(noFlyZone.getCoordinatesLngLat())) {
                 return true;
@@ -99,6 +99,9 @@ public record LngLat(@JsonProperty("longitude") double lng, @JsonProperty("latit
      * @return A new LngLat object representing the new position of the drone after moving in the given direction.
      */
     public LngLat nextPosition(CompassDirection compassDirection) {
+        if (compassDirection == null) { // Hover move for the drone.
+            return this;
+        }
         double radianAngle = Math.toRadians(compassDirection.getAngle());
         double newLng = this.lng + (MOVE_LENGTH * Math.cos(radianAngle));
         double newLat = this.lat + (MOVE_LENGTH * Math.sin(radianAngle));

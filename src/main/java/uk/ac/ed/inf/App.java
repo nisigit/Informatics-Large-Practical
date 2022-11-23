@@ -2,6 +2,7 @@ package uk.ac.ed.inf;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDate;
 import java.util.Scanner;
 
 /**
@@ -11,7 +12,7 @@ public class App {
 
     public static void printOrderStatus() throws IOException {
         ResponseFetcher responseFetcher = ResponseFetcher.getInstance();
-        Order[] orders = responseFetcher.getOrders();
+        Order[] orders = responseFetcher.getOrdersFromRestServer();
         int validOrders = 0;
         int invalidOrders = 0;
         for (Order order : orders) {
@@ -30,7 +31,7 @@ public class App {
 
     public static void printNoFlyZones() throws IOException {
         ResponseFetcher responseFetcher = ResponseFetcher.getInstance();
-        NoFlyZone[] noFlyZones = responseFetcher.getNoFlyZones();
+        NoFlyZone[] noFlyZones = responseFetcher.getNoFlyZonesFromRestServer();
         for (NoFlyZone noFlyZone : noFlyZones) {
             System.out.println("No fly zone: " + noFlyZone.name);
             for (LngLat lngLat : noFlyZone.getCoordinatesLngLat()) {
@@ -41,7 +42,7 @@ public class App {
 
     public static void printRestaurants() throws IOException {
         ResponseFetcher responseFetcher = ResponseFetcher.getInstance();
-        Restaurant[] restaurants = responseFetcher.getRestaurants();
+        Restaurant[] restaurants = responseFetcher.getRestaurantsFromRestServer();
         for (Restaurant restaurant : restaurants) {
             LngLat restLngLat = restaurant.getLngLat();
             System.out.println("Restaurant: " + restaurant.name);
@@ -65,6 +66,10 @@ public class App {
 
         ResponseFetcher responseFetcher = ResponseFetcher.getInstance();
         responseFetcher.setBaseUrl("https://ilp-rest.azurewebsites.net/");
+
+        LocalDate date = LocalDate.parse("2023-05-01");
+        WorldState worldState = new WorldState(date);
+
         printOrderStatus();
     }
 }

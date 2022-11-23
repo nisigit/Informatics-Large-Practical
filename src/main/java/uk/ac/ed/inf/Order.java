@@ -91,11 +91,10 @@ public class Order {
             }
             allPizzas.addAll(restaurantMenu.keySet());
         }
-
-        // If at least one order item is not in any restaurant's menu.
+        // If all the order items were found in menus of different restaurants.
         if (allPizzas.containsAll(Arrays.asList(this.orderItems))) {
             this.orderOutcome = OrderOutcome.InvalidPizzaCountMultipleSuppliers;
-        } else {
+        } else { // At least one item in the order was not found in any of the menus.
             this.orderOutcome = OrderOutcome.InvalidPizzaNotDefined;
         }
         return false;
@@ -112,7 +111,7 @@ public class Order {
             return false;
         }
 
-        Restaurant[] participants = ResponseFetcher.getInstance().getRestaurants();
+        Restaurant[] participants = ResponseFetcher.getInstance().getRestaurantsFromRestServer();
 
         if (!this.areItemsValid(participants)) {
             return false;
