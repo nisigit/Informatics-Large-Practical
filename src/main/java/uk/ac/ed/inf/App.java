@@ -28,6 +28,27 @@ public class App {
         System.out.println("Total invalid orders: " + invalidOrders);
     }
 
+    public static void printNoFlyZones() throws IOException {
+        ResponseFetcher responseFetcher = ResponseFetcher.getInstance();
+        NoFlyZone[] noFlyZones = responseFetcher.getNoFlyZones();
+        for (NoFlyZone noFlyZone : noFlyZones) {
+            System.out.println("No fly zone: " + noFlyZone.name);
+            for (LngLat lngLat : noFlyZone.getCoordinatesLngLat()) {
+                System.out.println("LngLat: " + lngLat.lng() + ", " + lngLat.lat());
+            }
+        }
+    }
+
+    public static void printRestaurants() throws IOException {
+        ResponseFetcher responseFetcher = ResponseFetcher.getInstance();
+        Restaurant[] restaurants = responseFetcher.getRestaurants();
+        for (Restaurant restaurant : restaurants) {
+            LngLat restLngLat = restaurant.getLngLat();
+            System.out.println("Restaurant: " + restaurant.name);
+            System.out.println("Location: " + restLngLat.lng() + ", " + restLngLat.lat());
+        }
+    }
+
     public static void main(String[] args) throws IOException {
         // Take input for API url
         Scanner scanner = new Scanner(System.in);

@@ -1,11 +1,9 @@
 package uk.ac.ed.inf;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -17,15 +15,18 @@ public class AppTest
 
     public static final double DISTANCE_TOLERANCE = 0.00015;
 
-    public final ResponseFetcher responseFetcher;
     public AppTest() {
-        responseFetcher = ResponseFetcher.getInstance();
-        responseFetcher.setBaseUrl("https://ilp-rest.azurewebsites.net/");
+
+    }
+
+    @Before
+    public void setUp() {
+        ResponseFetcher.getInstance().setBaseUrl("https://ilp-rest.azurewebsites.net/");
     }
 
     /**
      * Test for the inCentralArea() method in the LngLat record.
-     * @throws IOException
+     * @throws IOException If the REST server is not available or base url is invalid.
      */
     @Test
     public void inCentralAreaTest() throws IOException {
@@ -38,6 +39,23 @@ public class AppTest
         assertFalse(outsideCentralArea.inCentralArea());
         assertTrue(forrestHillPoint.inCentralArea()); // Vertice should be inside central area.
         assertTrue(onTheEdge.inCentralArea()); // An edge of the central area should be considered inside
+    }
+
+    @Test
+    public void inNoFlyZoneTest() throws IOException {
+        LngLat inGsGarden = new LngLat(-3.188393466950572, 55.943952704696954);
+        LngLat inEiq = new LngLat(-3.1902565248433348, 55.945120512244245);
+        LngLat inPotterrow = new LngLat(-3.1894540474406767, 55.945558262680095);
+        LngLat bayes = new LngLat(-3.1876455472986436, 55.94518995314348);
+        LngLat bayesEdgeCase = new LngLat(-3.187525376802995,55.94518429292029);
+        LngLat outsidePotterrow = new LngLat(-3.1893999244256577, 55.94551504105377);
+
+        assertTrue(inGsGarden.inNoFlyZone());
+        assertTrue(inEiq.inNoFlyZone());
+        assertTrue(inPotterrow.inNoFlyZone());
+        assertTrue(bayes.inNoFlyZone());
+        assertFalse(bayesEdgeCase.inNoFlyZone());
+        assertFalse(outsidePotterrow.inNoFlyZone());
     }
 
     /**
@@ -91,30 +109,5 @@ public class AppTest
         }
         assertTrue(travellingPoint.closeTo(initPoint));
     }
-
-
-//    @Test
-//    public void getDeliveryCostTest() throws IOException, InvalidPizzaCombinationException {
-//        Restaurant[] restaurants = Restaurant.getRestaurantsFromRestServer(new URL("https://ilp-rest.azurewebsites.net"));
-//        Order order = new Order();
-//
-//        ArrayList<String> orderItems1 = new ArrayList<>(List.of("Margarita", "Calzone"));
-//        int price1 = order.getDeliveryCost(restaurants, orderItems1);
-//        assertEquals(price1, 2500, 0.0);
-//
-//
-//        ArrayList<String> orderItems2 = new ArrayList<>(List.of("Proper Pizza", "Pineapple & Ham & Cheese"));
-//        int price2 = order.getDeliveryCost(restaurants, orderItems2);
-//        assertEquals(price2, 2400, 0.0);
-//    }
-
-//    @Test(expected = InvalidPizzaCombinationException.class)
-//    public void invalidPizzaDeliveryCostTest() throws InvalidPizzaCombinationException, IOException {
-//        Restaurant[] restaurants = Restaurant.getRestaurantsFromRestServer(new URL("https://ilp-rest.azurewebsites.net"));
-//        Order order = new Order();
-//
-//        ArrayList<String> orderItems = new ArrayList<>(List.of("Margarita", "Vegan Delight"));
-//        int price = order.getDeliveryCost(restaurants, orderItems);
-//    }
 
 }

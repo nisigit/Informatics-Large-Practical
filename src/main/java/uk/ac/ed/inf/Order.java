@@ -158,14 +158,14 @@ public class Order {
         return true;
     }
 
+    // TODO: Add Luhn's algorithm
     /**
      * Method to check if credit card number of an order is valid.
      * @return True if the credit card number is valid, false otherwise.
      */
     private boolean isCardNumberValid() {
         // Credit card number should be 13 to 16 digits long and only contain digits.
-        if (this.creditCardNumber.length() < 13 ||
-                this.creditCardNumber.length() > 16 ||
+        if (this.creditCardNumber.length() != 16 ||
                 !this.creditCardNumber.matches("[0-9]+")) {
             this.orderOutcome = OrderOutcome.InvalidCardNumber;
             return false;

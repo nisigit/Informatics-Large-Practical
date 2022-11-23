@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 /**
  * Record to represent a point/position.
@@ -16,43 +15,61 @@ public record LngLat(@JsonProperty("longitude") double lng, @JsonProperty("latit
 
     /**
      * Constant to store the distance (in degrees) that the drone covers in one move. Also, a measure
-     * to check if if two points are close to each other.
+     * to check if two points are close to each other.
      */
     private static final double MOVE_LENGTH = 0.00015;
 
     /**
-     * Method to return whether a given point is inside the central area.
-     * @return True if point is inside the central area. False otherwise.
-     * @throws IOException
+     * Method to check if the current LngLat point is close inside a polyon.
+     * @param polygon An array of LngLat objects representing the vertices of the polygon.
+     * @return true if the current LngLat point is inside the polygon, false otherwise.
      */
-    public boolean inCentralArea() throws IOException {
-        ResponseFetcher responseFetcher = ResponseFetcher.getInstance();
-        ArrayList<LngLat> centralVertices = responseFetcher.getCentralArea();
-        int numPoints = centralVertices.size();
-
-        // Number of times a ray to the right (east) from the point intercepts an edge of the area
-        // (odd or even). If interceptions are odd, point is inside, else outside.
-        boolean result = false;
-
-        // Loop to check if the number of edges a ray from given point intercepts is odd or even.
+    private boolean inPolygon(LngLat[] polygon) {
+        int numPoints = polygon.length;
+        boolean isInside = false;
         for (int i = 0, j = numPoints - 1; i < numPoints; j = i++) {
-            // If point is on one of the edges/vertices, then it is inside the central area.
-            if (this.distanceTo(centralVertices.get(i)) + this.distanceTo(centralVertices.get(j)) ==
-                                centralVertices.get(i).distanceTo(centralVertices.get(j))) {
+            // If the point is on the edge of the polygon, return true.
+            if (this.distanceTo(polygon[i]) + this.distanceTo(polygon[j]) ==
+                    polygon[i].distanceTo(polygon[j])) {
                 return true;
             }
-
             // Whether the latitude of vertice is north of this point and that of the other is south.
-            boolean isNorthSouth = (centralVertices.get(i).lat > this.lat) != (centralVertices.get(j).lat > this.lat);
+            boolean isNorthSouth = (polygon[i].lat > this.lat) != (polygon[j].lat > this.lat);
             // Whether the edge will intersect a ray towards positive x-axis (east) of the point.
-            boolean eastIntersect = (this.lng < ((centralVertices.get(j).lng - centralVertices.get(i).lng) *
-                    (this.lat - centralVertices.get(i).lat) / (centralVertices.get(j).lat - centralVertices.get(i).lat)) +
-                    centralVertices.get(i).lng);
+            boolean eastIntersect = (this.lng < ((polygon[j].lng - polygon[i].lng) *
+                    (this.lat - polygon[i].lat) / (polygon[j].lat - polygon[i].lat)) +
+                    polygon[i].lng);
             if (isNorthSouth && eastIntersect) {
-                result = !result;
+                isInside = !isInside;
             }
         }
-        return result;
+        return isInside;
+    }
+
+    /**
+     * Method to return whether a given point is inside the central area.
+     * @return True if point is inside the central area. False otherwise.
+     * @throws IOException If the REST server is not available or base url is invalid.
+     */
+    public boolean inCentralArea() throws IOException {
+        LngLat[] centralVertices = ResponseFetcher.getInstance().getCentralArea();
+        return this.inPolygon(centralVertices);
+    }
+
+    /**
+     * Method to return whether a given point is inside a no-fly zone.
+     * @return True if point is inside a no-fly zone. False otherwise.
+     * @throws IOException If the REST server is not available or base url is invalid.
+     */
+    public boolean inNoFlyZone() throws IOException {
+        ResponseFetcher responseFetcher = ResponseFetcher.getInstance();
+        NoFlyZone[] noFlyZones = responseFetcher.getNoFlyZones();
+        for (NoFlyZone noFlyZone : noFlyZones) {
+            if (this.inPolygon(noFlyZone.getCoordinatesLngLat())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -72,8 +89,7 @@ public record LngLat(@JsonProperty("longitude") double lng, @JsonProperty("latit
      * @return True if the current point is within 0.00015 degrees of the other point. False otherwise.
      */
     public boolean closeTo(LngLat otherPoint) {
-        double pointDist = this.distanceTo(otherPoint);
-        return pointDist < MOVE_LENGTH;
+        return this.distanceTo(otherPoint) < MOVE_LENGTH;
     }
 
     /**
@@ -86,7 +102,6 @@ public record LngLat(@JsonProperty("longitude") double lng, @JsonProperty("latit
         double radianAngle = Math.toRadians(compassDirection.getAngle());
         double newLng = this.lng + (MOVE_LENGTH * Math.cos(radianAngle));
         double newLat = this.lat + (MOVE_LENGTH * Math.sin(radianAngle));
-
         return new LngLat(newLng, newLat);
     }
 

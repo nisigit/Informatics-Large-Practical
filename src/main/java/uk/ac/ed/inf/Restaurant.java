@@ -18,18 +18,20 @@ public class Restaurant {
 
     // Field to store the longitude of the restaurant.
     @JsonProperty("longitude")
-    public double lng;
+    private double lng;
 
     // Field to store the latitude of the restaurant.
     @JsonProperty("latitude")
-    public double lat;
+    private double lat;
 
     // Array to store the list of menu items in the menu of the restaurant.
     @JsonProperty("menu")
-    public Menu[] menuItems;
+    private Menu[] menuItems;
 
     // HashMap to store the menu items and their prices in the menu of the restaurant.
     private HashMap<String, Integer> menuItemPrices;
+
+    private LngLat restLngLat;
 
     /**
      * Class constructor.
@@ -54,7 +56,7 @@ public class Restaurant {
 
 
     /**
-     * Method to get the menu of the restaurant.
+     * Method to get the array of items in the menu of a restaurant.
      * @return An array of Menu instances representing items in the restaurant's menu
      */
     public Menu[] getMenu() {
@@ -67,9 +69,16 @@ public class Restaurant {
         return menuItems;
     }
 
+    public LngLat getLngLat() {
+        if (this.restLngLat == null) {
+            this.restLngLat = new LngLat(this.lng, this.lat);
+        }
+        return this.restLngLat;
+    }
+
+
     /**
      * Method to fetch the list of participating restaurants in the service.
-     * 
      * @param serverBaseAddress Base URL of the rest server to fetch all the
      *                          restaurants' data.
      * @return Array of Restaurant objects representing a participating restaurant
