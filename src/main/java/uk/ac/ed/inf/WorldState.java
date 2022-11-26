@@ -8,7 +8,7 @@ public class WorldState {
 
     public static final int MAX_DRONE_MOVES = 2000;
 
-
+    public static final double DRONE_MOVE_DISTANCE = 0.00015;
 
     private final LngLat droneStartPos = APPLETON_TOWER_COORDINATES;
     private Restaurant[] restaurants;
@@ -22,10 +22,6 @@ public class WorldState {
      */
     public WorldState(LocalDate date) throws IOException {
         this.date = date;
-        this.restaurants = new Restaurant[0];
-        this.centralAreaVertices = new LngLat[0];
-        this.noFlyZones = new NoFlyZone[0];
-        this.orders = new Order[0];
         this.initialiseWorldState();
     }
 
@@ -38,10 +34,11 @@ public class WorldState {
      *                     class passed in as the second parameter.
      */
     private void initialiseWorldState() throws IOException {
-        this.noFlyZones = ResponseFetcher.getInstance().getNoFlyZonesFromRestServer();
-        this.centralAreaVertices = ResponseFetcher.getInstance().getCentralAreaFromRestServer();
-        this.restaurants = ResponseFetcher.getInstance().getRestaurantsFromRestServer();
-        this.orders = ResponseFetcher.getInstance().getOrdersFromRestServer(this.date);
+        ResponseFetcher responseFetcher = ResponseFetcher.getInstance();
+        this.noFlyZones = responseFetcher.getNoFlyZonesFromRestServer();
+        this.centralAreaVertices = responseFetcher.getCentralAreaFromRestServer();
+        this.restaurants = responseFetcher.getRestaurantsFromRestServer();
+        this.orders = responseFetcher.getOrdersFromRestServer(this.date);
     }
 
     /**

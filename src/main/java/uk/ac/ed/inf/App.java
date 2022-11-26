@@ -3,6 +3,7 @@ package uk.ac.ed.inf;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 /**
@@ -10,13 +11,13 @@ import java.util.Scanner;
  */
 public class App {
 
-    public static void printOrderStatus() throws IOException {
+    public static void printOrderStatus(WorldState worldState) throws IOException {
         ResponseFetcher responseFetcher = ResponseFetcher.getInstance();
-        Order[] orders = responseFetcher.getOrdersFromRestServer();
+        Order[] orders = worldState.getOrders();
         int validOrders = 0;
         int invalidOrders = 0;
         for (Order order : orders) {
-            boolean validOrder = order.isOrderValid();
+            boolean validOrder = order.isOrderValid(worldState);
             if (validOrder) {
                 validOrders++;
                 System.out.println("Order " + order.orderNo + " is valid");
@@ -50,6 +51,19 @@ public class App {
         }
     }
 
+    public static void printPath(WorldState worldState) throws IOException {
+        LngLat start = new LngLat(-3.186874, 55.944494);
+        LngLat end = new LngLat(-3.1912869215011597, 55.945535152517735);
+
+        PathFinder pathFinder = new PathFinder(worldState);
+
+        ArrayList<LngLat> path = pathFinder.findPath(start, end);
+        for (LngLat lngLat : path) {
+            System.out.println("[" + lngLat.lng() + ", " + lngLat.lat() + "],");
+        }
+        LngLat fin = new LngLat(-3.1911798928079014, 55.94546984275254);
+    }
+
     public static void main(String[] args) throws IOException {
         // Take input for API url
         Scanner scanner = new Scanner(System.in);
@@ -65,11 +79,13 @@ public class App {
         }
 
         ResponseFetcher responseFetcher = ResponseFetcher.getInstance();
-        responseFetcher.setBaseUrl("https://ilp-rest.azurewebsites.net/");
+        responseFetcher.setBaseUrl(baseUrl);
 
+        // Initialise the world state for given date.
         LocalDate date = LocalDate.parse("2023-05-01");
         WorldState worldState = new WorldState(date);
 
-        printOrderStatus();
+//        printOrderStatus(worldState);
+        printPath(worldState);
     }
 }

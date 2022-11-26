@@ -9,7 +9,7 @@ public class Drone {
     public Drone(WorldState worldState) {
         this.startPos = worldState.getDroneStartPos();
         this.currentPos = worldState.getDroneStartPos();
-        this.movesRemaining = 2000;
+        this.movesRemaining = WorldState.MAX_DRONE_MOVES;
     }
 
     public LngLat getStartPos() {

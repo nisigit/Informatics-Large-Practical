@@ -100,7 +100,7 @@ public class Order {
         return false;
     }
 
-    public boolean isOrderValid() throws IOException {
+    public boolean isOrderValid(WorldState worldState) throws IOException {
         // The number of pizzas ordered must be greater than 0 and up to 5.
         if (this.orderItems.length < 1 || this.orderItems.length > 5) {
             this.orderOutcome = OrderOutcome.InvalidPizzaCount;
@@ -111,7 +111,7 @@ public class Order {
             return false;
         }
 
-        Restaurant[] participants = ResponseFetcher.getInstance().getRestaurantsFromRestServer();
+        Restaurant[] participants = worldState.getRestaurants();
 
         if (!this.areItemsValid(participants)) {
             return false;
