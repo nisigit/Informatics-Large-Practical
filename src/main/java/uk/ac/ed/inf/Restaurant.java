@@ -42,6 +42,7 @@ public class Restaurant {
 
     /**
      * Method to get HashMap of menu items and their prices in the menu of the
+     * 
      * @return HashMap of menu items and their prices in the menu of the
      */
     public HashMap<String, Integer> getMenuItemPrices() {
@@ -54,10 +55,11 @@ public class Restaurant {
         return menuItemPrices;
     }
 
-
     /**
      * Method to get the array of items in the menu of a restaurant.
-     * @return An array of Menu instances representing items in the restaurant's menu
+     * 
+     * @return An array of Menu instances representing items in the restaurant's
+     *         menu
      */
     public Menu[] getMenu() {
         if (menuItemPrices == null) {
@@ -76,9 +78,9 @@ public class Restaurant {
         return this.restLngLat;
     }
 
-
     /**
      * Method to fetch the list of participating restaurants in the service.
+     * 
      * @param serverBaseAddress Base URL of the rest server to fetch all the
      *                          restaurants' data.
      * @return Array of Restaurant objects representing a participating restaurant

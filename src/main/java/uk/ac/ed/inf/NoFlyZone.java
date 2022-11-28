@@ -22,12 +22,12 @@ public class NoFlyZone {
     }
 
     public LngLat[] getCoordinatesLngLat() {
-       if (this.coordinatesLngLat == null) {
-           this.coordinatesLngLat = new LngLat[this.coordinates.length];
-           for (int i = 0; i < coordinates.length; i++) {
-               coordinatesLngLat[i] = new LngLat(coordinates[i][0], coordinates[i][1]);
-           }
-       }
-       return this.coordinatesLngLat;
+        if (this.coordinatesLngLat == null) {
+            this.coordinatesLngLat = new LngLat[this.coordinates.length];
+            for (int i = 0; i < coordinates.length; i++) {
+                coordinatesLngLat[i] = new LngLat(coordinates[i][0], coordinates[i][1]);
+            }
+        }
+        return this.coordinatesLngLat;
     }
 }

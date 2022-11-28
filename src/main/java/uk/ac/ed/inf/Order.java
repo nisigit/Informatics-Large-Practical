@@ -2,7 +2,6 @@ package uk.ac.ed.inf;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -15,11 +14,11 @@ public class Order {
 
     // String to store the order number of the order.
     @JsonProperty("orderNo")
-    public String orderNo;
+    private String orderNo;
 
     // String to store the date of the order.
     @JsonProperty("orderDate")
-    public String orderDate;
+    private String orderDate;
 
     // String to store the customer name of the order.
     @JsonProperty("customer")
@@ -48,6 +47,10 @@ public class Order {
     // Restaurant instance of the restaurant that the order is from.
     private Restaurant orderRestaurant;
 
+    // Integer to store the number of moves the drone has to make to get to the
+    // order's restaurant.
+    private int movesToRestaurant;
+
     private OrderOutcome orderOutcome;
 
     /**
@@ -57,7 +60,23 @@ public class Order {
 
     }
 
-    public int getDeliveryCost(Restaurant[] participants) {
+    public OrderOutcome getOrderOutcome() {
+        return orderOutcome;
+    }
+
+    public void setOrderOutcome(OrderOutcome orderOutcome) {
+        this.orderOutcome = orderOutcome;
+    }
+
+    public int getMovesToRestaurant() {
+        return movesToRestaurant;
+    }
+
+    public void setMovesToRestaurant(int movesToRestaurant) {
+        this.movesToRestaurant = movesToRestaurant;
+    }
+
+    public int getDeliveryCost() {
         if (this.orderRestaurant == null) {
             if (this.orderOutcome == null) {
                 throw new IllegalArgumentException("Check if order is valid before getting delivery cost");
@@ -75,9 +94,12 @@ public class Order {
     }
 
     /**
-     * Method to check if the items in the order are valid. If the items are valid, the method
+     * Method to check if the items in the order are valid. If the items are valid,
+     * the method
      * sets the restaurant of the order to the restaurant that the items are from.
-     * @param participants An array of Restaurant instances representing the restaurants that are
+     * 
+     * @param participants An array of Restaurant instances representing the
+     *                     restaurants that are
      *                     participating in the service.
      * @return True if the items in the order are valid, false otherwise.
      */
@@ -100,7 +122,18 @@ public class Order {
         return false;
     }
 
-    public boolean isOrderValid(WorldState worldState) throws IOException {
+    /**
+     * Method to check if a given order is valid for a given world state. If the
+     * order is valid, the method sets the
+     * order outcome to OrderOutcome.ValidButNotDelivered, and the order restaurant
+     * to the restaurant that the order is from.
+     * 
+     * @param worldState The world state for a particular dat to check the order
+     *                   against.
+     * @return True if the order is valid for the given world state, false
+     *         otherwise.
+     */
+    public boolean isOrderValid(WorldState worldState) {
         // The number of pizzas ordered must be greater than 0 and up to 5.
         if (this.orderItems.length < 1 || this.orderItems.length > 5) {
             this.orderOutcome = OrderOutcome.InvalidPizzaCount;
@@ -112,22 +145,25 @@ public class Order {
         }
 
         Restaurant[] participants = worldState.getRestaurants();
-
         if (!this.areItemsValid(participants)) {
             return false;
         }
 
-        if (this.getDeliveryCost(participants) != this.priceTotalInPence) {
+        if (this.getDeliveryCost() != this.priceTotalInPence) {
             this.orderOutcome = OrderOutcome.InvalidTotal;
             return false;
         }
-
+        this.orderOutcome = OrderOutcome.ValidButNotDelivered;
+        PathFinder pathFinder = new PathFinder(worldState);
+        this.movesToRestaurant = (pathFinder.findPath(WorldState.APPLETON_TOWER_COORDINATES,
+                this.orderRestaurant.getLngLat())).size();
         return true;
     }
 
     /**
      * Method to check if the expiry date of the credit card is of a
      * valid format and is not before the order date.
+     * 
      * @return True if the expiry date is valid, false otherwise.
      */
     private boolean isCardExpiryValid() {
@@ -160,6 +196,7 @@ public class Order {
     // TODO: Add Luhn's algorithm
     /**
      * Method to check if credit card number of an order is valid.
+     * 
      * @return True if the credit card number is valid, false otherwise.
      */
     private boolean isCardNumberValid() {
@@ -174,15 +211,24 @@ public class Order {
 
     /**
      * Method to check if Card CVV in the order is valid.
+     * 
      * @return true if the CVV is valid, false otherwise.
      */
     private boolean isCardCvvValid() {
         // Credit card CVV should be 3 digits long and only contain digits.
-        if (!this.cvv.matches("^[0-9]{3,4}$")) {
+        if (!this.cvv.matches("^[0-9]{3}$")) {
             this.orderOutcome = OrderOutcome.InvalidCvv;
             return false;
         }
         return true;
+    }
+
+    public Restaurant getRestaurant() {
+        return this.orderRestaurant;
+    }
+
+    public String getOrderNo() {
+        return orderNo;
     }
 
 }

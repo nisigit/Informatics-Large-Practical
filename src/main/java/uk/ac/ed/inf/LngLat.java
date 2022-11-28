@@ -7,6 +7,7 @@ import java.io.IOException;
 
 /**
  * Record to represent a point/position.
+ * 
  * @param lng to represent to longitude of the point
  * @param lat to represent the latitude of the point
  */
@@ -14,13 +15,15 @@ import java.io.IOException;
 public record LngLat(@JsonProperty("longitude") double lng, @JsonProperty("latitude") double lat) {
 
     /**
-     * Constant to store the distance (in degrees) that the drone covers in one move. Also, a measure
+     * Constant to store the distance (in degrees) that the drone covers in one
+     * move. Also, a measure
      * to check if two points are close to each other.
      */
     private static final double MOVE_LENGTH = 0.00015;
 
     /**
      * Method to check if the current LngLat point is close inside a polygon.
+     * 
      * @param polygon An array of LngLat objects representing the vertices of the polygon.
      * @return true if the current LngLat point is inside the polygon, false otherwise.
      */
@@ -48,8 +51,10 @@ public record LngLat(@JsonProperty("longitude") double lng, @JsonProperty("latit
 
     /**
      * Method to return whether a given point is inside the central area.
+     * 
      * @return True if point is inside the central area. False otherwise.
-     * @throws IOException If the REST server is not available or base url is invalid.
+     * @throws IOException If the REST server is not available or base url is
+     *                     invalid.
      */
     public boolean inCentralArea() throws IOException {
         LngLat[] centralVertices = ResponseFetcher.getInstance().getCentralAreaFromRestServer();
@@ -58,8 +63,10 @@ public record LngLat(@JsonProperty("longitude") double lng, @JsonProperty("latit
 
     /**
      * Method to return whether a given point is inside a no-fly zone.
+     * 
      * @return True if point is inside a no-fly zone. False otherwise.
-     * @throws IOException If the REST server is not available or base url is invalid.
+     * @throws IOException If the REST server is not available or base url is
+     *                     invalid.
      */
     public boolean inNoFlyZone() throws IOException {
         ResponseFetcher responseFetcher = ResponseFetcher.getInstance();
@@ -73,7 +80,9 @@ public record LngLat(@JsonProperty("longitude") double lng, @JsonProperty("latit
     }
 
     /**
-     * Method to return the Euclidean distance between the current point and another point.
+     * Method to return the Euclidean distance between the current point and another
+     * point.
+     * 
      * @param otherPoint the point distance is being calculated to.
      * @return The Euclidean distance between the current point and otherPoint.
      */
@@ -84,19 +93,25 @@ public record LngLat(@JsonProperty("longitude") double lng, @JsonProperty("latit
     }
 
     /**
-     * Method to return whether the current point and another point are within 0.00015 degrees of each other
+     * Method to return whether the current point and another point are within
+     * 0.00015 degrees of each other
+     * 
      * @param otherPoint the point with which the closeness is being calculated to.
-     * @return True if the current point is within 0.00015 degrees of the other point. False otherwise.
+     * @return True if the current point is within 0.00015 degrees of the other
+     *         point. False otherwise.
      */
     public boolean closeTo(LngLat otherPoint) {
         return this.distanceTo(otherPoint) < MOVE_LENGTH;
     }
 
     /**
-     * Method to return a new LngLat object which represents the new position of the drone after moving 1 move length
+     * Method to return a new LngLat object which represents the new position of the
+     * drone after moving 1 move length
      * (0.00015 degrees) from its current position in the given compass direction.
+     * 
      * @param compassDirection the direction in which the drone is moving.
-     * @return A new LngLat object representing the new position of the drone after moving in the given direction.
+     * @return A new LngLat object representing the new position of the drone after
+     *         moving in the given direction.
      */
     public LngLat nextPosition(CompassDirection compassDirection) {
         if (compassDirection == null) { // Hover move for the drone.

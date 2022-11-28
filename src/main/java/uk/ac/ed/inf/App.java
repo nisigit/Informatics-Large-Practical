@@ -20,10 +20,10 @@ public class App {
             boolean validOrder = order.isOrderValid(worldState);
             if (validOrder) {
                 validOrders++;
-                System.out.println("Order " + order.orderNo + " is valid");
+                System.out.println("Order " + order.getOrderNo() + " is valid");
             } else {
                 invalidOrders++;
-                System.out.println("Order " + order.orderNo + " is invalid");
+                System.out.println("Order " + order.getOrderNo() + ": " + order.getOrderOutcome());
             }
         }
         System.out.println("Total valid orders: " + validOrders);
@@ -53,15 +53,42 @@ public class App {
 
     public static void printPath(WorldState worldState) throws IOException {
         LngLat start = new LngLat(-3.186874, 55.944494);
-        LngLat end = new LngLat(-3.1912869215011597, 55.945535152517735);
+        LngLat end = new LngLat(-3.202541470527649,
+                55.943284737579376);
 
         PathFinder pathFinder = new PathFinder(worldState);
 
-        ArrayList<LngLat> path = pathFinder.findPath(start, end);
-        for (LngLat lngLat : path) {
-            System.out.println("[" + lngLat.lng() + ", " + lngLat.lat() + "],");
+        ArrayList<PathStep> path = pathFinder.findPath(start, end);
+        for (PathStep pathStep : path) {
+            System.out.println("[" + pathStep.toLngLat.lng() + ", " + pathStep.toLngLat.lat() + "],");
         }
-        LngLat fin = new LngLat(-3.1911798928079014, 55.94546984275254);
+
+    }
+
+    public static void deliveries(WorldState worldState) {
+        Drone drone = new Drone(worldState);
+        drone.deliverOrders();
+        System.out.println("Drone moves remaining: " + drone.getMovesRemaining());
+        System.out.println("Drone final position: " + drone.getCurrentPos().lng() + ", " + drone.getCurrentPos().lat());
+
+        Order[] orders = worldState.getOrders();
+        int deliveredOrders = 0;
+        int notDeliveredOrders = 0;
+        int validOrders = 0;
+        for (Order order : orders) {
+            if (order.getOrderOutcome() == OrderOutcome.Delivered) {
+                deliveredOrders++;
+            } else {
+                notDeliveredOrders++;
+            }
+            if (order.getOrderOutcome() == OrderOutcome.ValidButNotDelivered
+                    || order.getOrderOutcome() == OrderOutcome.Delivered) {
+                validOrders++;
+            }
+        }
+        System.out.println("Valid orders: " + validOrders);
+        System.out.println("Total delivered orders: " + deliveredOrders);
+        System.out.println("Total not delivered orders: " + notDeliveredOrders);
     }
 
     public static void main(String[] args) throws IOException {
@@ -82,10 +109,9 @@ public class App {
         responseFetcher.setBaseUrl(baseUrl);
 
         // Initialise the world state for given date.
-        LocalDate date = LocalDate.parse("2023-05-01");
+        LocalDate date = LocalDate.parse("2023-01-01");
         WorldState worldState = new WorldState(date);
 
-//        printOrderStatus(worldState);
-        printPath(worldState);
+        deliveries(worldState);
     }
 }

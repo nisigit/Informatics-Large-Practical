@@ -17,7 +17,6 @@ public class ResponseFetcher {
     // Field to store the base url of the REST server.
     private String baseUrl;
 
-
     /**
      * Class constructor.
      */
@@ -50,11 +49,13 @@ public class ResponseFetcher {
     }
 
     /**
-     * Method to fetch a response from the REST server, given an endpoint and a class to map the response to.
+     * Method to fetch a response from the REST server, given an endpoint and a
+     * class to map the response to.
      *
      * @return Object of the class passed in as the second parameter.
-     * @throws IOException if the REST server cannot be reached or the response cannot be mapped to the
-     * class passed in as the second parameter.
+     * @throws IOException if the REST server cannot be reached or the response
+     *                     cannot be mapped to the
+     *                     class passed in as the second parameter.
      */
     private <T> T getResponseFromRestServer(String endpoint, Class<T> valueType) throws IOException {
         if (baseUrl == null) {
@@ -65,7 +66,8 @@ public class ResponseFetcher {
     }
 
     /**
-     * Method to get an ArrayList of LngLat objects representing the vertices of the central area from the REST server
+     * Method to get an ArrayList of LngLat objects representing the vertices of the
+     * central area from the REST server
      *
      * @return An ArrayList of LngLat objects representing the vertices of the central area.
      * @throws IOException If the REST server is not available or base url is invalid.
@@ -75,9 +77,11 @@ public class ResponseFetcher {
     }
 
     /**
-     * Method to get an array of Order objects representing all the orders in the system from the REST server.
+     * Method to get an array of Order objects representing all the orders in the
+     * system from the REST server.
      *
-     * @return An array of Order objects representing all the orders fetched from the REST server.
+     * @return An array of Order objects representing all the orders fetched from
+     *         the REST server.
      * @throws IOException If the REST server is not running or the base url is invalid.
      */
     public Order[] getOrdersFromRestServer() throws IOException {
@@ -85,9 +89,11 @@ public class ResponseFetcher {
     }
 
     /**
-     * Method to get an array of Order objects representing the orders fetched from the REST server for a given date.
+     * Method to get an array of Order objects representing the orders fetched from
+     * the REST server for a given date.
      *
-     * @param date LocalDate object representing the date for which the orders are to be fetched.
+     * @param date LocalDate object representing the date for which the orders are
+     *             to be fetched.
      * @return An array of Order objects representing the orders fetched from the REST server.
      * @throws IOException If the REST server is not running or the base url is invalid.
      */
@@ -97,9 +103,11 @@ public class ResponseFetcher {
     }
 
     /**
-     * Method to get an array of Restaurant objects representing the restaurants fetched from the REST server.
+     * Method to get an array of Restaurant objects representing the restaurants
+     * fetched from the REST server.
      *
-     * @return An array of Restaurant objects representing the restaurants fetched from the REST server.
+     * @return An array of Restaurant objects representing the restaurants fetched
+     *         from the REST server.
      * @throws IOException If the REST server is not running or the base url is invalid.
      */
     public Restaurant[] getRestaurantsFromRestServer() throws IOException {
@@ -107,8 +115,11 @@ public class ResponseFetcher {
     }
 
     /**
-     * Method to get an array of NoFlyZone objects representing the no-fly zones fetched from the REST server.
-     * @return An array of NoFlyZone objects representing the no-fly zones fetched from the REST server.
+     * Method to get an array of NoFlyZone objects representing the no-fly zones
+     * fetched from the REST server.
+     * 
+     * @return An array of NoFlyZone objects representing the no-fly zones fetched
+     *         from the REST server.
      * @throws IOException If the REST server is not running or the base url is invalid.
      */
     public NoFlyZone[] getNoFlyZonesFromRestServer() throws IOException {
