@@ -1,12 +1,14 @@
 package uk.ac.ed.inf;
 
+import java.util.Objects;
+
 public class PathStep {
 
-    public PathStep prevStep;
+    private final PathStep prevStep;
 
-    public LngLat toLngLat;
+    private final LngLat toLngLat;
 
-    public CompassDirection directionFromParent;
+    private final CompassDirection stepDirection;
 
     private String orderNo;
 
@@ -23,7 +25,7 @@ public class PathStep {
         this.toLngLat = startPoint;
         this.targetLngLat = targetLngLat;
         this.prevStep = null;
-        this.directionFromParent = null;
+        this.stepDirection = null;
     }
 
 
@@ -32,14 +34,14 @@ public class PathStep {
      *
      * @param toLngLat The LngLat instance representing the final location after this step.
      * @param prevStep The previous step in the path.
-     * @param directionFromParent The direction taken to go from the final point of the previous step
+     * @param stepDirection The direction taken to go from the final point of the previous step
      *                            to the final point of this step.
      * @param targetLngLat LngLat instnace representing target point of the path.
      */
-    public PathStep(LngLat toLngLat, PathStep prevStep, CompassDirection directionFromParent, LngLat targetLngLat) {
+    public PathStep(LngLat toLngLat, PathStep prevStep, CompassDirection stepDirection, LngLat targetLngLat) {
         this.toLngLat = toLngLat;
         this.prevStep = prevStep;
-        this.directionFromParent = directionFromParent;
+        this.stepDirection = stepDirection;
         this.targetLngLat = targetLngLat;
     }
 
@@ -58,7 +60,7 @@ public class PathStep {
      * @return The order number of the order that this step is associated with.
      */
     public String getOrderNo() {
-    	return this.orderNo;
+    	return orderNo;
     }
 
 
@@ -79,6 +81,31 @@ public class PathStep {
      */
     public double getDistanceToTarget() {
         return this.toLngLat.distanceTo(targetLngLat);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final PathStep other = (PathStep) obj;
+        return Objects.equals(this.toLngLat, other.toLngLat) &&
+                Objects.equals(this.targetLngLat, other.targetLngLat);
+    }
+
+    public PathStep getPrevStep() {
+        return prevStep;
+    }
+
+    public LngLat getToLngLat() {
+        return toLngLat;
+    }
+
+    public CompassDirection getStepDirection() {
+        return stepDirection;
     }
 
 }

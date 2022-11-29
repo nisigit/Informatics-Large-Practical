@@ -21,7 +21,7 @@ public class Drone {
 
 
     // List storing all the steps taken by the drone
-    private ArrayList<PathStep> dronePath;
+    private ArrayList<PathStep> fullDronePath;
 
     private final PathFinder pathFinder;
 
@@ -30,7 +30,7 @@ public class Drone {
         this.startPos = worldState.getDroneStartPos();
         this.currentPos = worldState.getDroneStartPos();
         this.movesRemaining = MAX_DRONE_MOVES;
-        this.dronePath = new ArrayList<PathStep>();
+        this.fullDronePath = new ArrayList<>();
         this.pathFinder = new PathFinder(worldState);
     }
 
@@ -38,6 +38,7 @@ public class Drone {
         PriorityQueue<Order> orderPriorityQueue = this.getOrderQueue();
         while (orderPriorityQueue.size() > 0) {
             Order order = orderPriorityQueue.poll();
+            // If order is valid and drone has enough moves to deliver, deliver order.
             if (order.getOrderOutcome() == OrderOutcome.ValidButNotDelivered &&
                     (2 * order.getMovesToRestaurant()) < this.movesRemaining) {
                 deliverOrder(order);
@@ -49,27 +50,26 @@ public class Drone {
 
     private void deliverOrder(Order order) {
         ArrayList<PathStep> pathToRestaurant = this.pathFinder.findPath(this.currentPos, order.getRestaurant().getLngLat());
+        ArrayList<PathStep> pathToStart = this.pathFinder.findPath(pathToRestaurant.get(pathToRestaurant.size() - 1).getToLngLat(), this.startPos);
 
-        ArrayList<PathStep> pathToStart = this.pathFinder.findPath(pathToRestaurant.get(pathToRestaurant.size() - 1).toLngLat, this.startPos);
-
-        ArrayList<PathStep> fullOrderPath = new ArrayList<PathStep>();
+        ArrayList<PathStep> fullOrderPath = new ArrayList<>();
         fullOrderPath.addAll(pathToRestaurant);
         fullOrderPath.addAll(pathToStart);
 
         for (PathStep pathStep : fullOrderPath) {
             pathStep.setOrderNo(order.getOrderNo());
-            this.dronePath.add(pathStep);
-            this.currentPos = pathStep.toLngLat;
+            this.fullDronePath.add(pathStep);
+            this.currentPos = pathStep.getToLngLat();
             this.movesRemaining--;
             // Extra hover step for collecting at restaurant and delivering at start position (Appleton).
-            if (pathStep.toLngLat.closeTo(order.getRestaurant().getLngLat()) ||
-                    pathStep.toLngLat.closeTo(this.startPos)) {
-                PathStep hoverStep = new PathStep(pathStep.toLngLat, pathStep, null, pathStep.toLngLat);
-                this.dronePath.add(hoverStep);
+            if (pathStep.getToLngLat().closeTo(order.getRestaurant().getLngLat()) ||
+                    pathStep.getToLngLat().closeTo(this.startPos)) {
+                PathStep hoverStep = new PathStep(pathStep.getToLngLat(), pathStep, null, pathStep.getTargetLngLat());
+                this.fullDronePath.add(hoverStep);
+                this.movesRemaining--;
             }
         }
         order.setOrderOutcome(OrderOutcome.Delivered);
-        System.out.println("Moves remaining: " + this.movesRemaining);
     }
 
 
@@ -84,7 +84,7 @@ public class Drone {
                 ArrayList<PathStep> pathToRestaurant = this.pathFinder.findPath(this.currentPos,
                         order.getRestaurant().getLngLat());
                 movesToRestaurant = pathToRestaurant.size() + 1; // Adding 1 for hovering at the restaurant.
-            } else {
+            } else { // Order is not valid, so it is impossible to deliver.
                 movesToRestaurant = Integer.MAX_VALUE;
             }
             order.setMovesToRestaurant(movesToRestaurant);
@@ -105,4 +105,7 @@ public class Drone {
         return this.movesRemaining;
     }
 
+    public ArrayList<PathStep> getFullDronePath() {
+        return fullDronePath;
+    }
 }

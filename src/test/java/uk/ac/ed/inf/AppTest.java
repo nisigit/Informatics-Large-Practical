@@ -4,6 +4,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.Objects;
 import java.util.PriorityQueue;
 
@@ -52,12 +54,13 @@ public class AppTest
         LngLat bayesEdgeCase = new LngLat(-3.187525376802995,55.94518429292029);
         LngLat outsidePotterrow = new LngLat(-3.1893999244256577, 55.94551504105377);
 
-        assertTrue(inGsGarden.inNoFlyZone());
-        assertTrue(inEiq.inNoFlyZone());
-        assertTrue(inPotterrow.inNoFlyZone());
-        assertTrue(bayes.inNoFlyZone());
-        assertFalse(bayesEdgeCase.inNoFlyZone());
-        assertFalse(outsidePotterrow.inNoFlyZone());
+        WorldState worldState = new WorldState(LocalDate.parse("2023-01-01"));
+        assertTrue(inGsGarden.inNoFlyZone(worldState));
+        assertTrue(inEiq.inNoFlyZone(worldState));
+        assertTrue(inPotterrow.inNoFlyZone(worldState));
+        assertTrue(bayes.inNoFlyZone(worldState));
+        assertFalse(bayesEdgeCase.inNoFlyZone(worldState));
+        assertFalse(outsidePotterrow.inNoFlyZone(worldState));
     }
 
     /**

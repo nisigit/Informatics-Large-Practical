@@ -38,7 +38,7 @@ public class Order {
 
     // String to store the total price in pence of the order.
     @JsonProperty("priceTotalInPence")
-    public int priceTotalInPence;
+    private int priceTotalInPence;
 
     // Array of strings to store the names of the items in the order.
     @JsonProperty("orderItems")
@@ -130,8 +130,7 @@ public class Order {
      * 
      * @param worldState The world state for a particular dat to check the order
      *                   against.
-     * @return True if the order is valid for the given world state, false
-     *         otherwise.
+     * @return True if the order is valid for the given world state, false otherwise.
      */
     public boolean isOrderValid(WorldState worldState) {
         // The number of pizzas ordered must be greater than 0 and up to 5.
@@ -231,4 +230,7 @@ public class Order {
         return orderNo;
     }
 
+    public int getPriceTotalInPence() {
+        return priceTotalInPence;
+    }
 }

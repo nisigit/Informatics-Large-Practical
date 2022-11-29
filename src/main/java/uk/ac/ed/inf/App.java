@@ -52,20 +52,20 @@ public class App {
     }
 
     public static void printPath(WorldState worldState) throws IOException {
-        LngLat start = new LngLat(-3.186874, 55.944494);
-        LngLat end = new LngLat(-3.202541470527649,
-                55.943284737579376);
+        LngLat end = new LngLat(-3.186874, 55.944494);
+        LngLat start = new LngLat(-3.1940174102783203,
+                55.94390696616939);
 
         PathFinder pathFinder = new PathFinder(worldState);
 
         ArrayList<PathStep> path = pathFinder.findPath(start, end);
         for (PathStep pathStep : path) {
-            System.out.println("[" + pathStep.toLngLat.lng() + ", " + pathStep.toLngLat.lat() + "],");
+            System.out.println("[" + pathStep.getToLngLat().lng() + ", " + pathStep.getToLngLat().lat() + "],");
         }
 
     }
 
-    public static void deliveries(WorldState worldState) {
+    public static void deliveries(WorldState worldState) throws IOException {
         Drone drone = new Drone(worldState);
         drone.deliverOrders();
         System.out.println("Drone moves remaining: " + drone.getMovesRemaining());
@@ -89,6 +89,8 @@ public class App {
         System.out.println("Valid orders: " + validOrders);
         System.out.println("Total delivered orders: " + deliveredOrders);
         System.out.println("Total not delivered orders: " + notDeliveredOrders);
+        JsonMaker.createDeliveriesJson(worldState);
+        JsonMaker.createFlightPathJson(drone, worldState);
     }
 
     public static void main(String[] args) throws IOException {
@@ -111,7 +113,6 @@ public class App {
         // Initialise the world state for given date.
         LocalDate date = LocalDate.parse("2023-01-01");
         WorldState worldState = new WorldState(date);
-
         deliveries(worldState);
     }
 }

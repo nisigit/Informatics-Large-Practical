@@ -65,12 +65,9 @@ public record LngLat(@JsonProperty("longitude") double lng, @JsonProperty("latit
      * Method to return whether a given point is inside a no-fly zone.
      * 
      * @return True if point is inside a no-fly zone. False otherwise.
-     * @throws IOException If the REST server is not available or base url is
-     *                     invalid.
      */
-    public boolean inNoFlyZone() throws IOException {
-        ResponseFetcher responseFetcher = ResponseFetcher.getInstance();
-        NoFlyZone[] noFlyZones = responseFetcher.getNoFlyZonesFromRestServer();
+    public boolean inNoFlyZone(WorldState worldState) {
+        NoFlyZone[] noFlyZones = worldState.getNoFlyZones();
         for (NoFlyZone noFlyZone : noFlyZones) {
             if (this.inPolygon(noFlyZone.getCoordinatesLngLat())) {
                 return true;

@@ -4,9 +4,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 
 public class WorldState {
-    public static final LngLat APPLETON_TOWER_COORDINATES = new LngLat(-3.1883, 55.9462);
-
-    public static final int MAX_DRONE_MOVES = 2000;
+    public static final LngLat APPLETON_TOWER_COORDINATES = new LngLat(-3.186874, 55.944494);
 
     public static final double DRONE_MOVE_DISTANCE = 0.00015;
 
@@ -96,4 +94,7 @@ public class WorldState {
         return this.droneStartPos;
     }
 
+    public LocalDate getDate() {
+        return date;
+    }
 }
