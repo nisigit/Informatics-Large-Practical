@@ -91,6 +91,7 @@ public class App {
         System.out.println("Total not delivered orders: " + notDeliveredOrders);
         JsonMaker.createDeliveriesJson(worldState);
         JsonMaker.createFlightPathJson(drone, worldState);
+        JsonMaker.createDroneGeoJson(drone, worldState);
     }
 
     public static void main(String[] args) throws IOException {

@@ -4,6 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.LineString;
+import com.mapbox.geojson.Point;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -46,7 +50,7 @@ public class JsonMaker {
             stepNode.put("orderNo", pathStep.getOrderNo());
             stepNode.put("fromLongitude", prevStep.getToLngLat().lng());
             stepNode.put("fromLatitude", prevStep.getToLngLat().lat());
-            stepNode.put("angle", pathStep.getStepDirection().getAngle());
+//            stepNode.put("angle", pathStep.getStepDirection().getAngle());
             stepNode.put("toLongitude", pathStep.getToLngLat().lng());
             stepNode.put("toLatitude", pathStep.getToLngLat().lat());
             stepNode.put("ticksSinceStartOfCalculation", 0);
@@ -56,4 +60,20 @@ public class JsonMaker {
         String writePath = "flightPath-" + worldState.getDate().toString() + ".json";
         writer.writeValue(Paths.get(writePath).toFile(), flightPath);
     }
+
+    public static void createDroneGeoJson(Drone drone, WorldState worldState) throws IOException {
+        ArrayList<PathStep> fullDronePath = drone.getFullDronePath();
+        ArrayList<Point> points = new ArrayList<>();
+        for (PathStep pathStep : fullDronePath) {
+            Point point = Point.fromLngLat(pathStep.getToLngLat().lng(), pathStep.getToLngLat().lat());
+            points.add(point);
+        }
+        Feature lineString = Feature.fromGeometry(LineString.fromLngLats(points));
+        FeatureCollection featureCollection = FeatureCollection.fromFeature(lineString);
+        String writePath = "drone-" + worldState.getDate().toString() + ".geojson";
+        // write feature collection to file
+        ObjectWriter writer = OBJECT_MAPPER.writerWithDefaultPrettyPrinter();
+        writer.writeValue(Paths.get(writePath).toFile(), featureCollection.toJson());
+    }
+
 }
