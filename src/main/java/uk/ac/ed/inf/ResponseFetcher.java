@@ -12,7 +12,7 @@ import java.time.LocalDate;
  */
 public class ResponseFetcher {
 
-    // Object of the singleton class.
+    // Singleton class object.
     private static ResponseFetcher responseFetcher;
 
     // Field to store the base url of the REST server.
@@ -56,16 +56,17 @@ public class ResponseFetcher {
      *
      * @return Object of the class passed in as the second parameter.
      * @param endpoint String containing the endpoint to fetch the response from.
-     * @param valueType The class type to map the response to.
+     * @param classType The class type to map the response to.
      * @throws IOException if the REST server cannot be reached or the response cannot
      *                     be mapped to the class passed in as the second parameter.
      */
-    private <T> T getResponseFromRestServer(String endpoint, Class<T> valueType) throws IOException {
-        if (baseUrl == null) {
-            throw new IllegalStateException("Rest server base URL is not set");
+    private <T> T getResponseFromRestServer(String endpoint, Class<T> classType) throws IOException {
+        try {
+            URL restServerUrl = new URL(this.baseUrl + endpoint);
+            return new ObjectMapper().readValue(restServerUrl, classType);
+        } catch (Exception e) {
+            throw new IOException("Could not fetch response from REST server. Please check if base url is correct.");
         }
-        URL restServerUrl = new URL(this.baseUrl + endpoint);
-        return new ObjectMapper().readValue(restServerUrl, valueType);
     }
 
     /**
@@ -120,7 +121,6 @@ public class ResponseFetcher {
     /**
      * Method to get an array of NoFlyZone objects representing the no-fly zones
      * fetched from the REST server.
-     * 
      * @return An array of NoFlyZone objects representing the no-fly zones fetched
      *         from the REST server.
      * @throws IOException If the REST server is not running or the base url is invalid.

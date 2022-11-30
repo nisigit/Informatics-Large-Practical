@@ -166,9 +166,6 @@ public class Order {
             return false;
         }
         this.orderOutcome = OrderOutcome.ValidButNotDelivered;
-        PathFinder pathFinder = new PathFinder(worldState);
-        this.movesToRestaurant = (pathFinder.findPath(WorldState.APPLETON_TOWER_COORDINATES,
-                this.orderRestaurant.getLngLat())).size();
         return true;
     }
 

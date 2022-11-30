@@ -30,7 +30,7 @@ public class JsonMaker {
     }
 
     /**
-     * Method to create/overwrite and populate it with a JSON nodes.
+     * Method to create/overwrite and populate it with a JSON node.
      * @param filePath String representing the path to the file where the JSON/GeoJSON nodes
      *                 will be written to.
      * @param jsonNode JsonNode object containing the JSON/GeoJSON nodes to be written to the file.
@@ -102,15 +102,15 @@ public class JsonMaker {
      */
     public static void createDroneGeoJson(Drone drone, WorldState worldState) throws IOException {
         ObjectNode featureCollection = OBJECT_MAPPER.createObjectNode();
-        featureCollection.put("type", "FeatureCollection");
         ArrayNode features = OBJECT_MAPPER.createArrayNode();
-        featureCollection.set("features", features);
         ObjectNode feature = OBJECT_MAPPER.createObjectNode();
         features.add(feature);
         feature.put("type", "Feature");
+        featureCollection.put("type", "FeatureCollection");
+        featureCollection.set("features", features);
         ObjectNode properties = OBJECT_MAPPER.createObjectNode();
-        feature.set("properties", properties);
         ObjectNode geometry = OBJECT_MAPPER.createObjectNode();
+        feature.set("properties", properties);
         feature.set("geometry", geometry);
         geometry.put("type", "LineString");
         ArrayNode coordinates = OBJECT_MAPPER.createArrayNode();

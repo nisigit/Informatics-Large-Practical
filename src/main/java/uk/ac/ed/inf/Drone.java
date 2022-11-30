@@ -46,7 +46,7 @@ public class Drone {
     public Drone(WorldState worldState) {
         this.worldState = worldState;
         this.startPos = worldState.getDroneStartPos();
-        this.currentPos = worldState.getDroneStartPos();
+        this.currentPos = this.startPos;
         this.movesRemaining = MAX_DRONE_MOVES;
         this.fullDronePath = new ArrayList<>();
         this.pathFinder = new PathFinder(worldState);
@@ -61,11 +61,15 @@ public class Drone {
     public void deliverOrders() {
         PriorityQueue<Order> orderPriorityQueue = this.getOrderQueue();
         while (orderPriorityQueue.size() > 0) {
+            // Getting the next valid order with the least moves required to deliver it.
             Order order = orderPriorityQueue.poll();
+
+            // Full path to collect the order from the restaurant and deliver it to Appleton.
+            ArrayList<PathStep> fullOrderPath = this.pathFinder.getFullDeliveryPath(this.currentPos, order.getRestaurant());
             // If order is valid and drone has enough moves to deliver, deliver order.
             if (order.getOrderOutcome() == OrderOutcome.ValidButNotDelivered &&
-                    (2 * order.getMovesToRestaurant()) < this.movesRemaining) {
-                deliverOrder(order);
+                    fullOrderPath.size() <= this.movesRemaining) {
+                deliverOrder(order, fullOrderPath);
             } else { // No more valid orders or drone does not have enough battery to deliver order.
                 break;
             }
@@ -79,9 +83,7 @@ public class Drone {
      * the order's outcome. The method also adds the steps taken to the drone's full path.
      * @param order Order object representing the order to be delivered by the drone.
      */
-    private void deliverOrder(Order order) {
-
-        ArrayList<PathStep> fullOrderPath = this.pathFinder.getFullDeliveryPath(this.currentPos, order.getRestaurant());
+    private void deliverOrder(Order order, ArrayList<PathStep> fullOrderPath) {
         for (PathStep pathStep : fullOrderPath) {
             pathStep.setOrderNo(order.getOrderNo());
             this.fullDronePath.add(pathStep);
@@ -92,8 +94,8 @@ public class Drone {
     }
 
     /**
-     * Method to return a priority queue of valid orders, sorted by the number of moves
-     * required to deliver them.
+     * Method to return a priority queue of valid orders, sorted in increasing order of the number
+     * of moves required to deliver them.
      * @return PriorityQueue of valid orders, sorted by the number of moves required to deliver them.
      */
     private PriorityQueue<Order> getOrderQueue() {
@@ -103,28 +105,12 @@ public class Drone {
         for (Order order : orders) {
             if (order.isOrderValid(this.worldState)) {
                 ArrayList<PathStep> pathToRestaurant =
-                        this.pathFinder.findPath(this.currentPos, order.getRestaurant().getLngLat());
-                order.setMovesToRestaurant(pathToRestaurant.size() + 1); // extra hover step at restaurant.
+                        this.pathFinder.getFullDeliveryPath(this.currentPos, order.getRestaurant());
+                order.setMovesToRestaurant(pathToRestaurant.size());
                 orderPriorityQueue.add(order);
             }
         }
         return orderPriorityQueue;
-    }
-
-    /**
-     * Method to get the drone's starting position on a given day.
-     * @return LngLat object representing the drone's starting position.
-     */
-    public LngLat getStartPos() {
-        return this.startPos;
-    }
-
-    /**
-     * Method to return a LngLat object representing the drone's current location.
-     * @return LngLat object representing the drone's current position.
-     */
-    public LngLat getCurrentPos() {
-        return this.currentPos;
     }
 
     /**
@@ -136,7 +122,7 @@ public class Drone {
     }
 
     /**
-     * Method to get the full path taken by the drone on a given day.
+     * Method to get the full flight path, consisting of individual steps, taken by the drone on a given day.
      * @return ArrayList of PathStep, with each PathStep object representing
      * a step taken by the drone on a given day.
      */

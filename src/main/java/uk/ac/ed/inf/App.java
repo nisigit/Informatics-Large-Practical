@@ -2,6 +2,7 @@ package uk.ac.ed.inf;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 
 /**
  * Main class to run the application.
@@ -13,10 +14,8 @@ public class App {
      * for a given date.
      *
      * @param worldState the world state for the drone to deliver orders in.
-     * @throws IOException if the REST server cannot be reached or the response cannot
      */
-    private static void makeDeliveries(WorldState worldState) throws IOException {
-        Drone drone = new Drone(worldState);
+    private static void makeDeliveries(WorldState worldState, Drone drone) {
         System.out.println("Delivering orders for date: " + worldState.getDate());
         drone.deliverOrders();
 
@@ -33,10 +32,7 @@ public class App {
         }
         System.out.println("Valid orders: " + validCount);
         System.out.println("Delivered: " + delivered);
-
-        JsonMaker.createDeliveriesJson(worldState);
-        JsonMaker.createFlightPathJson(drone, worldState);
-        JsonMaker.createDroneGeoJson(drone, worldState);
+        System.out.println("Drone moves remaining: " + drone.getMovesRemaining());
     }
 
     /**
@@ -53,12 +49,21 @@ public class App {
             if (!baseUrl.endsWith("/")) {
                 throw new IllegalArgumentException("Invalid Rest API URL");
             }
+
+            // Setting the base url of the REST server in the ResponseFetcher class.
             ResponseFetcher responseFetcher = ResponseFetcher.getInstance();
             responseFetcher.setBaseUrl(baseUrl);
 
             // Initialise the world state for given date.
             WorldState worldState = new WorldState(date);
-            makeDeliveries(worldState);
+
+            // Initialise the drone object.
+            Drone drone = new Drone(worldState);
+
+            makeDeliveries(worldState, drone); // Deliver orders for the given date.
+            JsonMaker.createDeliveriesJson(worldState); // Create deliveries JSON file.
+            JsonMaker.createFlightPathJson(drone, worldState); // Create JSON file for flight path.
+            JsonMaker.createDroneGeoJson(drone, worldState); // Create GeoJSON file for drone flight path.
         } catch (Exception e) {
             e.printStackTrace();
         }

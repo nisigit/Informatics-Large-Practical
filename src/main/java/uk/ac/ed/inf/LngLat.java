@@ -6,8 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.IOException;
 
 /**
- * Record to represent a point/position.
- * 
+ * Record to represent a point/position coordinates.
  * @param lng to represent to longitude of the point
  * @param lat to represent the latitude of the point
  */

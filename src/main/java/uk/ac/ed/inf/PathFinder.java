@@ -6,34 +6,57 @@ import java.util.Comparator;
 import java.util.PriorityQueue;
 
 public class PathFinder {
+
+    // Field to store a WorldState object, which has information about flying zones, so that the pathfinder
+    // can avoid breaking any requirements for the drone's flight.
     private final WorldState worldState;
 
+    // Field to store the initialisation time of the pathfinder, so that ticks since start of calculation can be
+    // calculated for each calculated step during the pathfinding process.
     private final long startTime;
 
+    /**
+     * Constructor to initialise a new PathFinder object.
+     * @param worldState WorldState object containing information about orders, flying zones, restaurants, etc.
+     */
     public PathFinder(WorldState worldState) {
         this.worldState = worldState;
         this.startTime = System.nanoTime();
     }
 
+    /**
+     * Method to get the full delivery path for a drone to deliver a given order, including hovering over the
+     * restaurant and the delivery location.
+     * @param droneStartPos LngLat object representing the drone's location from which it will start collecting
+     *                      and delivering the order.
+     * @param restaurant LngLat object representing the restaurant location from which an order is to be picked up.
+     * @return An ArrayList of PathStep objects representing every step/move to be made by the drone to deliver an order.
+     */
     public ArrayList<PathStep> getFullDeliveryPath(LngLat droneStartPos, Restaurant restaurant) {
         ArrayList<PathStep> fullDeliveryPath = new ArrayList<>();
         ArrayList<PathStep> pathToRestaurant = this.findPath(droneStartPos, restaurant.getLngLat());
-        PathStep finalStepToRestaurant = pathToRestaurant.get(pathToRestaurant.size() - 1);
-        LngLat collectionPoint = finalStepToRestaurant.getToLngLat();
-        PathStep collectionHover = new PathStep(collectionPoint, finalStepToRestaurant, null, collectionPoint, System.nanoTime() - this.startTime);
-        pathToRestaurant.add(collectionHover);
+        addHoverStep(pathToRestaurant);
+        LngLat collectionPoint = pathToRestaurant.get(pathToRestaurant.size() - 1).getToLngLat();
 
         ArrayList<PathStep> pathToStartPos = this.findPath(collectionPoint, droneStartPos);
-        PathStep finalStepToStartPos = pathToStartPos.get(pathToStartPos.size() - 1);
-        LngLat deliveryPoint = finalStepToStartPos.getToLngLat();
-        PathStep deliveryHover = new PathStep(deliveryPoint, finalStepToStartPos, null, deliveryPoint, System.nanoTime() - this.startTime);
-        pathToStartPos.add(deliveryHover);
+        addHoverStep(pathToStartPos);
 
         fullDeliveryPath.addAll(pathToRestaurant);
         fullDeliveryPath.addAll(pathToStartPos);
         return fullDeliveryPath;
     }
 
+    /**
+     * Method to add a hovering step at the end of a path, to represent the drone hovering over the
+     * collection or delivery point.
+     * @param path ArrayList of PathStep objects representing a path.
+     */
+    private void addHoverStep(ArrayList<PathStep> path) {
+        PathStep finalStep = path.get(path.size() - 1);
+        LngLat hoverPoint = finalStep.getToLngLat();
+        PathStep hoverStep = new PathStep(hoverPoint, finalStep, null, finalStep.getTargetLngLat(), System.nanoTime() - this.startTime);
+        path.add(hoverStep);
+    }
 
     /**
      * Finds a one-way path from a start point to an end point.
@@ -41,7 +64,7 @@ public class PathFinder {
      * @param end   The end point of the path.
      * @return An ArrayList of LngLat points representing the path. Null if no path is found.
      */
-    public ArrayList<PathStep> findPath(LngLat start, LngLat end) {
+    private ArrayList<PathStep> findPath(LngLat start, LngLat end) {
         PathStep startPathStep = new PathStep(start, end, System.nanoTime()- this.startTime);
         PriorityQueue<PathStep> openList = new PriorityQueue<>(Comparator.comparingDouble(PathStep::getDistanceToTarget));
         openList.add(startPathStep);
@@ -75,6 +98,12 @@ public class PathFinder {
         return null; // No valid path found.
     }
 
+    /**
+     * Method to generate a path consisting of individual steps, after a final step reaches close to its
+     * target, by traversing each step and its parent, until the first step in the path.
+     * @param endPathStep The final step that reaches close to the target point.
+     * @return An ArrayList of PathStep objects representing the steps/moves to get from one point to another.
+     */
     private ArrayList<PathStep> generatePathFromEnd(PathStep endPathStep) {
         ArrayList<PathStep> path = new ArrayList<>();
         PathStep curStep = endPathStep;
@@ -87,7 +116,6 @@ public class PathFinder {
 
     /**
      * Checks if the path between two points crosses a no-fly zone boundary.
-     *
      * @param curLngLat       start of the path.
      * @param neighbourLngLat end of the path.
      * @return True if the path crosses a no-fly zone boundary, false otherwise.
@@ -109,7 +137,6 @@ public class PathFinder {
 
     /**
      * Method to check if a path crosses the central area boundary.
-     *
      * @param curLngLat       start of the path.
      * @param neighbourLngLat end of the path.
      * @return True if the path crosses the central area boundary, false otherwise.
