@@ -4,10 +4,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.Objects;
-import java.util.PriorityQueue;
 
 import static org.junit.Assert.*;
 
@@ -24,7 +22,7 @@ public class AppTest
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws MalformedURLException {
         ResponseFetcher.getInstance().setBaseUrl("https://ilp-rest.azurewebsites.net/");
     }
 

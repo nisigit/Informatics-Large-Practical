@@ -8,11 +8,15 @@ public class PathStep {
 
     private final LngLat toLngLat;
 
-    private final CompassDirection stepDirection;
+    private final Double stepDirectionAngle;
+
+    private final LngLat targetLngLat;
+
+    private boolean caBoundaryCrossed;
 
     private String orderNo;
 
-    private final LngLat targetLngLat;
+    private final long ticksSinceStartOfCalculation;
 
 
     /**
@@ -21,11 +25,13 @@ public class PathStep {
      * @param startPoint The starting point of the path.
      * @param targetLngLat LngLat object representing the target point of the path.
      */
-    public PathStep(LngLat startPoint, LngLat targetLngLat) {
+    public PathStep(LngLat startPoint, LngLat targetLngLat, Long ticksSinceStartOfCalculation) {
         this.toLngLat = startPoint;
         this.targetLngLat = targetLngLat;
         this.prevStep = null;
-        this.stepDirection = null;
+        this.stepDirectionAngle = null;
+        this.caBoundaryCrossed = false;
+        this.ticksSinceStartOfCalculation = ticksSinceStartOfCalculation;
     }
 
 
@@ -34,15 +40,17 @@ public class PathStep {
      *
      * @param toLngLat The LngLat instance representing the final location after this step.
      * @param prevStep The previous step in the path.
-     * @param stepDirection The direction taken to go from the final point of the previous step
-     *                            to the final point of this step.
-     * @param targetLngLat LngLat instnace representing target point of the path.
+     * @param stepDirectionAngle The direction angle (w.r.t East) taken to go from the final point of
+     *                           the previous step to the final point of this step.
+     * @param targetLngLat LngLat instance representing target point of the path.
      */
-    public PathStep(LngLat toLngLat, PathStep prevStep, CompassDirection stepDirection, LngLat targetLngLat) {
+    public PathStep(LngLat toLngLat, PathStep prevStep, Double stepDirectionAngle, LngLat targetLngLat, Long ticksSinceStartOfCalculation) {
         this.toLngLat = toLngLat;
         this.prevStep = prevStep;
-        this.stepDirection = stepDirection;
+        this.stepDirectionAngle = stepDirectionAngle;
         this.targetLngLat = targetLngLat;
+        this.caBoundaryCrossed = prevStep.caBoundaryCrossed;
+        this.ticksSinceStartOfCalculation = ticksSinceStartOfCalculation;
     }
 
 
@@ -104,8 +112,19 @@ public class PathStep {
         return toLngLat;
     }
 
-    public CompassDirection getStepDirection() {
-        return stepDirection;
+    public Double getStepDirectionAngle() {
+        return stepDirectionAngle;
     }
 
+    public boolean isCaBoundaryCrossed() {
+        return caBoundaryCrossed;
+    }
+
+    public void setCaBoundaryCrossed(boolean caBoundaryCrossed) {
+        this.caBoundaryCrossed = caBoundaryCrossed;
+    }
+
+    public long getTicksSinceStartOfCalculation() {
+        return ticksSinceStartOfCalculation;
+    }
 }

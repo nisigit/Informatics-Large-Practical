@@ -8,55 +8,71 @@ import java.util.PriorityQueue;
 public class PathFinder {
     private final WorldState worldState;
 
+    private final long startTime;
+
     public PathFinder(WorldState worldState) {
         this.worldState = worldState;
+        this.startTime = System.nanoTime();
     }
+
+    public ArrayList<PathStep> getFullDeliveryPath(LngLat droneStartPos, Restaurant restaurant) {
+        ArrayList<PathStep> fullDeliveryPath = new ArrayList<>();
+        ArrayList<PathStep> pathToRestaurant = this.findPath(droneStartPos, restaurant.getLngLat());
+        PathStep finalStepToRestaurant = pathToRestaurant.get(pathToRestaurant.size() - 1);
+        LngLat collectionPoint = finalStepToRestaurant.getToLngLat();
+        PathStep collectionHover = new PathStep(collectionPoint, finalStepToRestaurant, null, collectionPoint, System.nanoTime() - this.startTime);
+        pathToRestaurant.add(collectionHover);
+
+        ArrayList<PathStep> pathToStartPos = this.findPath(collectionPoint, droneStartPos);
+        PathStep finalStepToStartPos = pathToStartPos.get(pathToStartPos.size() - 1);
+        LngLat deliveryPoint = finalStepToStartPos.getToLngLat();
+        PathStep deliveryHover = new PathStep(deliveryPoint, finalStepToStartPos, null, deliveryPoint, System.nanoTime() - this.startTime);
+        pathToStartPos.add(deliveryHover);
+
+        fullDeliveryPath.addAll(pathToRestaurant);
+        fullDeliveryPath.addAll(pathToStartPos);
+        return fullDeliveryPath;
+    }
+
 
     /**
      * Finds a one-way path from a start point to an end point.
-     *
      * @param start The start point of the path.
      * @param end   The end point of the path.
      * @return An ArrayList of LngLat points representing the path. Null if no path is found.
      */
     public ArrayList<PathStep> findPath(LngLat start, LngLat end) {
-        PathStep startPathStep = new PathStep(start, end);
+        PathStep startPathStep = new PathStep(start, end, System.nanoTime()- this.startTime);
         PriorityQueue<PathStep> openList = new PriorityQueue<>(Comparator.comparingDouble(PathStep::getDistanceToTarget));
         openList.add(startPathStep);
         ArrayList<PathStep> closedList = new ArrayList<>();
-        boolean crossedCentralAreaBoundaries = false;
 
         while (openList.size() > 0) {
-            PathStep cur_pathStep = openList.poll();
-            closedList.add(cur_pathStep);
+            PathStep curPathStep = openList.poll();
+            closedList.add(curPathStep);
             for (CompassDirection compassDirection : CompassDirection.values()) {
-                LngLat neighbourLngLat = cur_pathStep.getToLngLat().nextPosition(compassDirection);
-                if (pathCrossesNoFlyZone(cur_pathStep.getToLngLat(), neighbourLngLat)) {
+                LngLat neighbourLngLat = curPathStep.getToLngLat().nextPosition(compassDirection);
+                PathStep neighbourPathStep = new PathStep(neighbourLngLat, curPathStep, compassDirection.getAngle(), end, System.nanoTime() - this.startTime);
+                boolean stepCrossesNfz = pathCrossesNoFlyZone(curPathStep.getToLngLat(), neighbourLngLat);
+                boolean stepCrossesCaBoundary = pathCrossesCentralAreaBoundary(curPathStep.getToLngLat(), neighbourLngLat);
+                if (stepCrossesNfz || (stepCrossesCaBoundary && neighbourPathStep.isCaBoundaryCrossed())) {
                     continue;
                 }
-                if (pathCrossesCentralAreaBoundary(cur_pathStep.getToLngLat(), neighbourLngLat)) {
-                    if (crossedCentralAreaBoundaries) { // Path cannot cross central area boundaries more than once.
-                        continue;
-                    } else {
-                        crossedCentralAreaBoundaries = true;
-                    }
-                }
+                neighbourPathStep.setCaBoundaryCrossed(stepCrossesCaBoundary);
 
-                PathStep neighbourPathStep = new PathStep(neighbourLngLat, cur_pathStep, compassDirection, end);
                 if (neighbourPathStep.getToLngLat().closeTo(end)) {
                     return generatePathFromEnd(neighbourPathStep);
                 }
-
                 if (!closedList.contains(neighbourPathStep)) {
                     openList.add(neighbourPathStep);
-                } else if (closedList.get(
-                        closedList.indexOf(neighbourPathStep)).getDistanceToTarget() > neighbourPathStep.getDistanceToTarget()) {
+                } else if (closedList.get(closedList.indexOf(neighbourPathStep)).getDistanceToTarget() >
+                            neighbourPathStep.getDistanceToTarget()) {
                     closedList.remove(neighbourPathStep);
                     openList.add(neighbourPathStep);
                 }
             }
         }
-        return null;
+        return null; // No valid path found.
     }
 
     private ArrayList<PathStep> generatePathFromEnd(PathStep endPathStep) {

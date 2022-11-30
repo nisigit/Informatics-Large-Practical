@@ -3,6 +3,7 @@ package uk.ac.ed.inf;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDate;
 
@@ -15,7 +16,7 @@ public class ResponseFetcher {
     private static ResponseFetcher responseFetcher;
 
     // Field to store the base url of the REST server.
-    private String baseUrl;
+    private URL baseUrl;
 
     /**
      * Class constructor.
@@ -39,13 +40,14 @@ public class ResponseFetcher {
     /**
      * Method to set the base url of the REST server.
      *
-     * @param baseUrl String containing the base url of the REST server.
+     * @param baseUrlString String containing the base url of the REST server.
+     * @throws MalformedURLException if the base url is invalid.
      */
-    public void setBaseUrl(String baseUrl) {
-        if (!baseUrl.endsWith("/")) {
-            baseUrl += "/"; // Ensuring url ends with a slash so endpoints can be appended.
+    public void setBaseUrl(String baseUrlString) throws MalformedURLException {
+        if (!baseUrlString.endsWith("/")) {
+            baseUrlString += "/"; // Ensuring url ends with a slash so endpoints can be appended.
         }
-        this.baseUrl = baseUrl;
+        this.baseUrl = new URL(baseUrlString);
     }
 
     /**
@@ -53,9 +55,10 @@ public class ResponseFetcher {
      * class to map the response to.
      *
      * @return Object of the class passed in as the second parameter.
-     * @throws IOException if the REST server cannot be reached or the response
-     *                     cannot be mapped to the
-     *                     class passed in as the second parameter.
+     * @param endpoint String containing the endpoint to fetch the response from.
+     * @param valueType The class type to map the response to.
+     * @throws IOException if the REST server cannot be reached or the response cannot
+     *                     be mapped to the class passed in as the second parameter.
      */
     private <T> T getResponseFromRestServer(String endpoint, Class<T> valueType) throws IOException {
         if (baseUrl == null) {
@@ -125,4 +128,5 @@ public class ResponseFetcher {
     public NoFlyZone[] getNoFlyZonesFromRestServer() throws IOException {
         return getResponseFromRestServer("noFlyZones", NoFlyZone[].class);
     }
+
 }

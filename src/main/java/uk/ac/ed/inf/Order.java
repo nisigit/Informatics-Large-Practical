@@ -60,28 +60,48 @@ public class Order {
 
     }
 
+    /**
+     * Method to get an OrderOutcome instance that represents the outcome of the order.
+     * @return OrderOutcome instance that represents the outcome of the order.
+     */
     public OrderOutcome getOrderOutcome() {
         return orderOutcome;
     }
 
+    /**
+     * Method to set the OrderOutcome instance that represents the outcome of the order.
+     * @param orderOutcome OrderOutcome instance that represents the outcome of the order.
+     */
     public void setOrderOutcome(OrderOutcome orderOutcome) {
         this.orderOutcome = orderOutcome;
     }
 
+    /**
+     * Method to get the number of moves the drone has to make to get to the order's restaurant.
+     * @return number of moves the drone has to make to get to the order's restaurant.
+     */
     public int getMovesToRestaurant() {
         return movesToRestaurant;
     }
 
+    /**
+     * Method to set the number of moves the drone has to make to get to the order's restaurant.
+     * @param movesToRestaurant number of moves the drone has to make to get to the order's restaurant.
+     */
     public void setMovesToRestaurant(int movesToRestaurant) {
         this.movesToRestaurant = movesToRestaurant;
     }
 
+    /**
+     * Method to get the delivery cost (in pence) of the order.
+     * @return delivery cost (in pence) of the order.
+     */
     public int getDeliveryCost() {
         if (this.orderRestaurant == null) {
             if (this.orderOutcome == null) {
-                throw new IllegalArgumentException("Check if order is valid before getting delivery cost");
+                throw new IllegalArgumentException("Check order validity before getting delivery cost");
             } else {
-                throw new IllegalArgumentException("Order is invalid");
+                throw new IllegalArgumentException("Cannot calculate delivery cost for invalid order.");
             }
         }
         int deliveryCost = 100; // Delivery cost is £1 (100 pence).
@@ -89,18 +109,14 @@ public class Order {
         for (String item : this.orderItems) {
             deliveryCost += restaurantMenu.get(item);
         }
-
         return deliveryCost;
     }
 
     /**
-     * Method to check if the items in the order are valid. If the items are valid,
-     * the method
-     * sets the restaurant of the order to the restaurant that the items are from.
-     * 
+     * Method to check if the items in the order are valid. If the items are valid. The
+     * method sets the restaurant of the order to the restaurant that the items are from.
      * @param participants An array of Restaurant instances representing the
-     *                     restaurants that are
-     *                     participating in the service.
+     *                     restaurants that are participating in the service.
      * @return True if the items in the order are valid, false otherwise.
      */
     private boolean areItemsValid(Restaurant[] participants) {
@@ -124,12 +140,9 @@ public class Order {
 
     /**
      * Method to check if a given order is valid for a given world state. If the
-     * order is valid, the method sets the
-     * order outcome to OrderOutcome.ValidButNotDelivered, and the order restaurant
-     * to the restaurant that the order is from.
-     * 
-     * @param worldState The world state for a particular dat to check the order
-     *                   against.
+     * order is valid, the method sets the order outcome to OrderOutcome.ValidButNotDelivered,
+     * and the order restaurant to the restaurant that the order is from.
+     * @param worldState The world state for a particular dat to check the order against.
      * @return True if the order is valid for the given world state, false otherwise.
      */
     public boolean isOrderValid(WorldState worldState) {
@@ -162,7 +175,6 @@ public class Order {
     /**
      * Method to check if the expiry date of the credit card is of a
      * valid format and is not before the order date.
-     * 
      * @return True if the expiry date is valid, false otherwise.
      */
     private boolean isCardExpiryValid() {
@@ -173,6 +185,7 @@ public class Order {
             return false;
         }
 
+        // Checking if the month number in the expiry date is valid.
         String[] expiryMonthYear = this.creditCardExpiry.split("/");
         int month = Integer.parseInt(expiryMonthYear[0]);
         if (month < 1 || month > 12) {
@@ -181,10 +194,10 @@ public class Order {
         }
 
         YearMonth expiryYearMonth = YearMonth.parse(this.creditCardExpiry, DateTimeFormatter.ofPattern("MM/yy"));
-        LocalDate expiryDate = expiryYearMonth.atEndOfMonth();
+        LocalDate expiryDate = expiryYearMonth.atEndOfMonth(); // Card expiry is the last day of the month.
         LocalDate orderDate = LocalDate.parse(this.orderDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
-        // Card is expired if the expiry date is before the order date.
+        // Card is invalid if order date is after expiry date.
         if (orderDate.isAfter(expiryDate)) {
             this.orderOutcome = OrderOutcome.InvalidExpiryDate;
             return false;
@@ -192,14 +205,14 @@ public class Order {
         return true;
     }
 
-    // TODO: Add Luhn's algorithm
     /**
-     * Method to check if credit card number of an order is valid.
+     * Method to check if credit card number of an order is valid. If invalid, the
+     * order outcome is set to OrderOutcome.InvalidCardNumber.
      * 
      * @return True if the credit card number is valid, false otherwise.
      */
     private boolean isCardNumberValid() {
-        // Credit card number should be 13 to 16 digits long and only contain digits.
+        // Credit card number should be 16 characters long and only contain digits.
         if (this.creditCardNumber.length() != 16 ||
                 !this.creditCardNumber.matches("[0-9]+")) {
             this.orderOutcome = OrderOutcome.InvalidCardNumber;
@@ -209,8 +222,8 @@ public class Order {
     }
 
     /**
-     * Method to check if Card CVV in the order is valid.
-     * 
+     * Method to check if Card CVV in the order is valid. If the CVV is invalid, the
+     * order outcome is set to OrderOutcome.InvalidCvv.
      * @return true if the CVV is valid, false otherwise.
      */
     private boolean isCardCvvValid() {
@@ -222,15 +235,27 @@ public class Order {
         return true;
     }
 
+    /**
+     * Method to get the Restaurant instance representing the restaurant that the order is from.
+     * @return Restaurant instance representing the restaurant that the order is from.
+     */
     public Restaurant getRestaurant() {
         return this.orderRestaurant;
     }
 
+    /**
+     * Method to get the order number of the order.
+     * @return String representing the order number of the order.
+     */
     public String getOrderNo() {
-        return orderNo;
+        return this.orderNo;
     }
 
+    /**
+     * Method to get the price total in pence of the order, received from the REST server.
+     * @return Integer representing the price total in pence of the order (from the REST server).
+     */
     public int getPriceTotalInPence() {
-        return priceTotalInPence;
+        return this.priceTotalInPence;
     }
 }

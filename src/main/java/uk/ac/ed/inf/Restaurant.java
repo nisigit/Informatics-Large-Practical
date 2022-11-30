@@ -26,7 +26,7 @@ public class Restaurant {
 
     // Array to store the list of menu items in the menu of the restaurant.
     @JsonProperty("menu")
-    private Menu[] menuItems;
+    private MenuItem[] menuItems;
 
     // HashMap to store the menu items and their prices in the menu of the restaurant.
     private HashMap<String, Integer> menuItemPrices;
@@ -48,27 +48,11 @@ public class Restaurant {
     public HashMap<String, Integer> getMenuItemPrices() {
         if (menuItemPrices == null) {
             menuItemPrices = new HashMap<>();
-            for (Menu menuItem : menuItems) {
+            for (MenuItem menuItem : menuItems) {
                 menuItemPrices.put(menuItem.name(), menuItem.priceInPence());
             }
         }
         return menuItemPrices;
-    }
-
-    /**
-     * Method to get the array of items in the menu of a restaurant.
-     * 
-     * @return An array of Menu instances representing items in the restaurant's
-     *         menu
-     */
-    public Menu[] getMenu() {
-        if (menuItemPrices == null) {
-            menuItemPrices = new HashMap<>();
-            for (Menu menuItem : this.menuItems) {
-                menuItemPrices.put(menuItem.name(), menuItem.priceInPence());
-            }
-        }
-        return menuItems;
     }
 
     public LngLat getLngLat() {

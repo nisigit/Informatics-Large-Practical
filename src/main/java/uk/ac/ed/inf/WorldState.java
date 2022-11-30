@@ -6,8 +6,6 @@ import java.time.LocalDate;
 public class WorldState {
     public static final LngLat APPLETON_TOWER_COORDINATES = new LngLat(-3.186874, 55.944494);
 
-    public static final double DRONE_MOVE_DISTANCE = 0.00015;
-
     private final LngLat droneStartPos = APPLETON_TOWER_COORDINATES;
     private Restaurant[] restaurants;
     private LngLat[] centralAreaVertices;

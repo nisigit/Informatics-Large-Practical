@@ -8,6 +8,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @param name         the name of the menu item.
  * @param priceInPence the price in pence of the menu item.
  */
-public record Menu(@JsonProperty("name") String name, @JsonProperty("priceInPence") int priceInPence) {
+public record MenuItem(@JsonProperty("name") String name, @JsonProperty("priceInPence") int priceInPence) {
 
 }

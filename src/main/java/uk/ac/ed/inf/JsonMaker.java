@@ -1,28 +1,54 @@
 package uk.ac.ed.inf;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.mapbox.geojson.Feature;
-import com.mapbox.geojson.FeatureCollection;
-import com.mapbox.geojson.LineString;
-import com.mapbox.geojson.Point;
 
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
 
+/**
+ * Class with static methods to create JSON files with details about the deliveries
+ * made and paths taken by the drone on a given day.
+ */
 public class JsonMaker {
 
+    /**
+     * ObjectMapper object to create JSON objects.
+     */
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
+    /**
+     * Class constructor.
+     */
     public JsonMaker() {
 
     }
 
+    /**
+     * Method to create/overwrite and populate it with a JSON nodes.
+     * @param filePath String representing the path to the file where the JSON/GeoJSON nodes
+     *                 will be written to.
+     * @param jsonNode JsonNode object containing the JSON/GeoJSON nodes to be written to the file.
+     * @throws IOException if the file cannot be created/overwritten.
+     */
+    private static void writeToFile(String filePath, JsonNode jsonNode) throws IOException {
+        ObjectWriter objectWriter = OBJECT_MAPPER.writerWithDefaultPrettyPrinter();
+        objectWriter.writeValue(Paths.get(filePath).toFile(), jsonNode);
+    }
 
+    /**
+     * Method to create/overwrite a JSON file and populating it with details about the
+     * deliveries made by the drone
+     *
+     * @param worldState WorldState object containing information about orders, flying zones,
+     *                   restaurants, etc. for in which the deliveries were made.
+     * @throws IOException if the file cannot be created/overwritten.
+     */
     public static void createDeliveriesJson(WorldState worldState) throws IOException {
         ArrayNode deliveries = OBJECT_MAPPER.createArrayNode();
         Order[] orders = worldState.getOrders();
@@ -35,12 +61,19 @@ public class JsonMaker {
                 deliveries.add(orderNode);
             }
         }
-        ObjectWriter writer = OBJECT_MAPPER.writerWithDefaultPrettyPrinter();
         String writePath = "deliveries-" + worldState.getDate().toString() + ".json";
-        writer.writeValue(Paths.get(writePath).toFile(), deliveries);
+        writeToFile(writePath, deliveries);
     }
 
 
+    /**
+     * Method to create/overwrite a JSON file and populating it with details about every
+     * move made by the drone on a given day, and the order no. for collecting/delivering it.
+     * @param drone Drone object representing the drone which made the moves.
+     * @param worldState WorldState object containing information about orders, flying zones,
+     *                   restaurants, etc. in which the moves were made.
+     * @throws IOException if the file cannot be created/overwritten.
+     */
     public static void createFlightPathJson(Drone drone, WorldState worldState) throws IOException {
         ArrayNode flightPath = OBJECT_MAPPER.createArrayNode();
         ArrayList<PathStep> fullDronePath = drone.getFullDronePath();
@@ -50,30 +83,47 @@ public class JsonMaker {
             stepNode.put("orderNo", pathStep.getOrderNo());
             stepNode.put("fromLongitude", prevStep.getToLngLat().lng());
             stepNode.put("fromLatitude", prevStep.getToLngLat().lat());
-//            stepNode.put("angle", pathStep.getStepDirection().getAngle());
+            stepNode.put("angle", pathStep.getStepDirectionAngle());
             stepNode.put("toLongitude", pathStep.getToLngLat().lng());
             stepNode.put("toLatitude", pathStep.getToLngLat().lat());
-            stepNode.put("ticksSinceStartOfCalculation", 0);
+            stepNode.put("ticksSinceStartOfCalculation", pathStep.getTicksSinceStartOfCalculation());
             flightPath.add(stepNode);
         }
-        ObjectWriter writer = OBJECT_MAPPER.writerWithDefaultPrettyPrinter();
-        String writePath = "flightPath-" + worldState.getDate().toString() + ".json";
-        writer.writeValue(Paths.get(writePath).toFile(), flightPath);
+        String filePath = "flightPath-" + worldState.getDate().toString() + ".json";
+        writeToFile(filePath, flightPath);
     }
 
+    /**
+     * Method to create/overwrite a GeoJSON file and populating it with coordinates of the
+     * all moves made by the drone on a given day
+     * @param drone Drone object representing the drone which made the moves.
+     * @param worldState WorldState object containing information about orders, flying zones,
+     * @throws IOException if the file cannot be created/overwritten.
+     */
     public static void createDroneGeoJson(Drone drone, WorldState worldState) throws IOException {
+        ObjectNode featureCollection = OBJECT_MAPPER.createObjectNode();
+        featureCollection.put("type", "FeatureCollection");
+        ArrayNode features = OBJECT_MAPPER.createArrayNode();
+        featureCollection.set("features", features);
+        ObjectNode feature = OBJECT_MAPPER.createObjectNode();
+        features.add(feature);
+        feature.put("type", "Feature");
+        ObjectNode properties = OBJECT_MAPPER.createObjectNode();
+        feature.set("properties", properties);
+        ObjectNode geometry = OBJECT_MAPPER.createObjectNode();
+        feature.set("geometry", geometry);
+        geometry.put("type", "LineString");
+        ArrayNode coordinates = OBJECT_MAPPER.createArrayNode();
+        geometry.set("coordinates", coordinates);
         ArrayList<PathStep> fullDronePath = drone.getFullDronePath();
-        ArrayList<Point> points = new ArrayList<>();
         for (PathStep pathStep : fullDronePath) {
-            Point point = Point.fromLngLat(pathStep.getToLngLat().lng(), pathStep.getToLngLat().lat());
-            points.add(point);
+            ArrayNode coordinate = OBJECT_MAPPER.createArrayNode();
+            coordinate.add(pathStep.getToLngLat().lng());
+            coordinate.add(pathStep.getToLngLat().lat());
+            coordinates.add(coordinate);
         }
-        Feature lineString = Feature.fromGeometry(LineString.fromLngLats(points));
-        FeatureCollection featureCollection = FeatureCollection.fromFeature(lineString);
-        String writePath = "drone-" + worldState.getDate().toString() + ".geojson";
-        // write feature collection to file
-        ObjectWriter writer = OBJECT_MAPPER.writerWithDefaultPrettyPrinter();
-        writer.writeValue(Paths.get(writePath).toFile(), featureCollection.toJson());
+        String fileName = "drone-" + worldState.getDate().toString() + ".geojson";
+        writeToFile(fileName, featureCollection);
     }
 
 }
