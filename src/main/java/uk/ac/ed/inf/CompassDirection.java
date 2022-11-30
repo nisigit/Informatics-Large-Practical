@@ -43,7 +43,7 @@ public enum CompassDirection {
      *         represented by the enum.
      */
     public Double getAngle() {
-        return angle;
+        return this.angle;
     }
 
 }

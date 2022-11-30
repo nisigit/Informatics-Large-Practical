@@ -15,6 +15,9 @@ public class Drone {
      */
     public static final int MAX_DRONE_MOVES = 2000;
 
+    /**
+     * Field representing the distance (in degrees) a drone travels in one move.
+     */
     public static final double MOVE_LENGTH = 0.00015;
 
     // LngLat object representing a drone's starting location.
@@ -28,7 +31,6 @@ public class Drone {
 
     // Number the moves the drone has remaining, before it runs out of battery.
     private int movesRemaining;
-
 
     // List storing all the steps taken by the drone for the current day.
     private ArrayList<PathStep> fullDronePath;
@@ -71,11 +73,10 @@ public class Drone {
     }
 
     /**
-     * Method to simulate delivering a single order by a drone. The method plans a route
-     * to the collection at the restaurant, then back to the drone's starting location, and
-     * also updates the drone's current position, drone's moves remaining, the order no.
-     * each step was taken, and the order's outcome. The method also adds the steps taken
-     * to the drone's full path.
+     * Method to simulate delivering a single order by a drone. The method calls the getFullDeliveryPath in
+     * PathFinder to get the full path for collecting and delivering an order, and also updates the
+     * drone's current position, drone's moves remaining, the order no. each step was taken, and
+     * the order's outcome. The method also adds the steps taken to the drone's full path.
      * @param order Order object representing the order to be delivered by the drone.
      */
     private void deliverOrder(Order order) {
@@ -93,7 +94,6 @@ public class Drone {
     /**
      * Method to return a priority queue of valid orders, sorted by the number of moves
      * required to deliver them.
-     *
      * @return PriorityQueue of valid orders, sorted by the number of moves required to deliver them.
      */
     private PriorityQueue<Order> getOrderQueue() {
@@ -113,7 +113,6 @@ public class Drone {
 
     /**
      * Method to get the drone's starting position on a given day.
-     *
      * @return LngLat object representing the drone's starting position.
      */
     public LngLat getStartPos() {
@@ -122,7 +121,6 @@ public class Drone {
 
     /**
      * Method to return a LngLat object representing the drone's current location.
-     *
      * @return LngLat object representing the drone's current position.
      */
     public LngLat getCurrentPos() {
@@ -131,7 +129,6 @@ public class Drone {
 
     /**
      * Method the get the number of moves the drone can make before it runs out of battery.
-     *
      * @return Number of moves the drone can make before it runs out of battery.
      */
     public int getMovesRemaining() {
