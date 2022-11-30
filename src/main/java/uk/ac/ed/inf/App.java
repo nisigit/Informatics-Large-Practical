@@ -1,8 +1,6 @@
 package uk.ac.ed.inf;
 
-import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
 
 /**
  * Main class to run the application.
@@ -10,9 +8,8 @@ import java.util.ArrayList;
 public class App {
 
     /**
-     * Initialises a drone object and calls the deliverOrders method to deliver orders
-     * for a given date.
-     *
+     * Calls the deliverOrders() method in the Drone class to deliver valid orders on a given day, and
+     * prints the number of valid orders, number of delivered orders and remaining moves of the drone.
      * @param worldState the world state for the drone to deliver orders in.
      */
     private static void makeDeliveries(WorldState worldState, Drone drone) {
@@ -38,7 +35,6 @@ public class App {
     /**
      * Main method of the program to read the date and rest server url arguments, initialise
      * the world state for the given date and then call the makeDeliveries method.
-     *
      * @param args the date and rest server's base url arguments.
      */
     public static void main(String[] args) {

@@ -11,7 +11,7 @@ import java.util.PriorityQueue;
 public class Drone {
 
     /**
-     * Field representing the  maximum number of moves a drone can make in a day.
+     * Field representing the maximum number of moves a drone can make in a day.
      */
     public static final int MAX_DRONE_MOVES = 2000;
 
@@ -55,8 +55,7 @@ public class Drone {
     /**
      * Method to simulate delivering orders by a drone on a given day. The method prioritises
      * orders based on the number of moves required to deliver them, and then only delivers
-     * orders if the drone has enough moves remaining to do so.
-     *
+     * an order if the drone has enough moves remaining to do so.
      */
     public void deliverOrders() {
         PriorityQueue<Order> orderPriorityQueue = this.getOrderQueue();
@@ -65,12 +64,12 @@ public class Drone {
             Order order = orderPriorityQueue.poll();
 
             // Full path to collect the order from the restaurant and deliver it to Appleton.
-            ArrayList<PathStep> fullOrderPath = this.pathFinder.getFullDeliveryPath(this.currentPos, order.getRestaurant());
-            // If order is valid and drone has enough moves to deliver, deliver order.
-            if (order.getOrderOutcome() == OrderOutcome.ValidButNotDelivered &&
-                    fullOrderPath.size() <= this.movesRemaining) {
+            ArrayList<PathStep> fullOrderPath =
+                    this.pathFinder.getFullDeliveryPath(this.currentPos, this.startPos, order.getRestaurant());
+            // If drone has enough moves to deliver the order, then deliver it.
+            if (fullOrderPath.size() <= this.movesRemaining) {
                 deliverOrder(order, fullOrderPath);
-            } else { // No more valid orders or drone does not have enough battery to deliver order.
+            } else { // drone does not have enough battery to deliver any more orders.
                 break;
             }
         }
@@ -78,8 +77,8 @@ public class Drone {
 
     /**
      * Method to simulate delivering a single order by a drone. The method calls the getFullDeliveryPath in
-     * PathFinder to get the full path for collecting and delivering an order, and also updates the
-     * drone's current position, drone's moves remaining, the order no. each step was taken, and
+     * PathFinder to get the full path for collecting and delivering an order, and also updates the drone's
+     * current position, drone's moves remaining, the order no. for which each step was taken, and
      * the order's outcome. The method also adds the steps taken to the drone's full path.
      * @param order Order object representing the order to be delivered by the drone.
      */
@@ -105,7 +104,7 @@ public class Drone {
         for (Order order : orders) {
             if (order.isOrderValid(this.worldState)) {
                 ArrayList<PathStep> pathToRestaurant =
-                        this.pathFinder.getFullDeliveryPath(this.currentPos, order.getRestaurant());
+                        this.pathFinder.getFullDeliveryPath(this.currentPos, this.startPos, order.getRestaurant());
                 order.setMovesToRestaurant(pathToRestaurant.size());
                 orderPriorityQueue.add(order);
             }

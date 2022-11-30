@@ -42,7 +42,8 @@ public class WorldState {
 
     /**
      * Method called by the class constructor to initialise the world state i.e, fetch and store the central area,
-     * no-fly-zones, orders and restaurants, at the beginning of a day the drone delivery service is running.
+     * no-fly-zones, orders and restaurants from the REST server, at the beginning of a day the drone delivery
+     * service is running.
      * @throws IOException if the REST server cannot be reached or if the response from the REST server
      *                     could not be parsed.
      */
