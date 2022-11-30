@@ -42,9 +42,6 @@ public class App {
             LocalDate date = LocalDate.parse(args[0]);
             String baseUrl = args[1];
             System.out.println(baseUrl);
-            if (!baseUrl.endsWith("/")) {
-                throw new IllegalArgumentException("Invalid Rest API URL");
-            }
 
             // Setting the base url of the REST server in the ResponseFetcher class.
             ResponseFetcher responseFetcher = ResponseFetcher.getInstance();
