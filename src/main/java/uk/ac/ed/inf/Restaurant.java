@@ -1,10 +1,7 @@
 package uk.ac.ed.inf;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.HashMap;
 
 /**
@@ -31,10 +28,11 @@ public class Restaurant {
     // HashMap to store the menu items and their prices in the menu of the restaurant.
     private HashMap<String, Integer> menuItemPrices;
 
+    // LngLat instance to represent the location of the restaurant.
     private LngLat restLngLat;
 
     /**
-     * Class constructor.
+     * Class constructor to initialise a new Restaurant object.
      */
     public Restaurant() {
 
@@ -42,7 +40,6 @@ public class Restaurant {
 
     /**
      * Method to get HashMap of menu items and their prices in the menu of the
-     * 
      * @return HashMap of menu items and their prices in the menu of the
      */
     public HashMap<String, Integer> getMenuItemPrices() {
@@ -60,29 +57,6 @@ public class Restaurant {
             this.restLngLat = new LngLat(this.lng, this.lat);
         }
         return this.restLngLat;
-    }
-
-    /**
-     * Method to fetch the list of participating restaurants in the service.
-     * 
-     * @param serverBaseAddress Base URL of the rest server to fetch all the
-     *                          restaurants' data.
-     * @return Array of Restaurant objects representing a participating restaurant
-     *         in the service.
-     * @throws IOException If the REST server is not available or base url is
-     *                     invalid.
-     */
-    public static Restaurant[] getRestaurantsFromRestServer(URL serverBaseAddress) throws IOException {
-        String endPoint = "";
-
-        if (!serverBaseAddress.toString().endsWith("/")) {
-            endPoint = "/" + endPoint;
-        }
-        endPoint += "restaurants";
-
-        URL serverAddress = new URL(serverBaseAddress + endPoint);
-        return new ObjectMapper().readValue(
-                serverAddress, Restaurant[].class);
     }
 
 }
