@@ -171,8 +171,9 @@ public class Order {
     }
 
     /**
-     * Method to check if the expiry date of the credit card is of a
-     * valid format and is not before the order date.
+     * Method to check if the expiry date of the credit card is of a valid format and
+     * is not before the order date. If expiry date is passed, the method sets the order
+     * outcome to OrderOutcome.InvalidCardExpired.
      * @return True if the expiry date is valid, false otherwise.
      */
     private boolean isCardExpiryValid() {
@@ -204,9 +205,9 @@ public class Order {
     }
 
     /**
-     * Method to check if credit card number of an order is valid. If invalid, the
-     * order outcome is set to OrderOutcome.InvalidCardNumber.
-     * 
+     * Method to check if credit card number of an order is valid by checking its length and
+     * whether it contains only digits. Also checks if the card number satisfies Luhn's algorithm.
+     * If invalid, the order outcome is set to OrderOutcome.InvalidCardNumber.
      * @return True if the credit card number is valid, false otherwise.
      */
     private boolean isCardNumberValid() {
@@ -252,8 +253,15 @@ public class Order {
     /**
      * Method to get the Restaurant instance representing the restaurant that the order is from.
      * @return Restaurant instance representing the restaurant that the order is from.
+     * @throws IllegalStateException if order validity has not been checked or the order is invalid.
      */
     public Restaurant getRestaurant() {
+        if (this.orderOutcome == null) {
+            throw new IllegalStateException("Check for order validity before getting restaurant.");
+        } else if (!(this.orderOutcome == OrderOutcome.ValidButNotDelivered ||
+                this.orderOutcome == OrderOutcome.Delivered)) {
+            throw new IllegalStateException("Cannot return restaurant for invalid order.");
+        }
         return this.orderRestaurant;
     }
 

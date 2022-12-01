@@ -21,16 +21,20 @@ public class DataFetcher {
     // Field to store the date for which data is being fetched and stored.
     private LocalDate date;
 
+    // Field to store the orders fetched from the REST server for the given date.
     private Order[] orders;
 
+    // Field to store the participating restaurants fetched from the REST server for the given date.
     private Restaurant[] restaurants;
 
+    // Field to store the no-fly zones fetched from the REST server for the given date.
     private NoFlyZone[] noFlyZones;
 
+    // Array to store the vertices of the central area fetched from the REST server.
     private LngLat[] centralArea;
 
     /**
-     * Class constructor.
+     * Class constructor to initialise the singleton class object.
      */
     private DataFetcher() {
 
@@ -48,7 +52,7 @@ public class DataFetcher {
     }
 
     /**
-     * Method to set the base url of the REST server.
+     * Method to set the base url of the REST server from which data will be fetched.
      * @param baseUrlString String containing the base url of the REST server.
      * @throws MalformedURLException if the base url is invalid.
      */
@@ -78,6 +82,9 @@ public class DataFetcher {
      *                     be mapped to the class passed in as a parameter.
      */
     private <T> T getResponseFromRestServer(String endpoint, Class<T> classType) throws IOException {
+        if (this.baseUrl == null) {
+            throw new IllegalStateException("Set the base url of the REST server before fetching data.");
+        }
         try {
             URL restServerUrl = new URL(this.baseUrl + endpoint);
             return new ObjectMapper().readValue(restServerUrl, classType);
