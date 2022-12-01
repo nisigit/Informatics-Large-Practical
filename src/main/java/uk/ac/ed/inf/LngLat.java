@@ -3,8 +3,6 @@ package uk.ac.ed.inf;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.io.IOException;
-
 /**
  * Record to represent a point/position coordinates.
  * @param lng to represent to longitude of the point
@@ -38,31 +36,6 @@ public record LngLat(@JsonProperty("longitude") double lng, @JsonProperty("latit
             }
         }
         return isInside;
-    }
-
-    /**
-     * Method to return whether a given point is inside the central area.
-     * @return True if point is inside the central area. False otherwise.
-     * @throws IOException If the REST server is not available or base url is invalid.
-     */
-    public boolean inCentralArea() throws IOException {
-        LngLat[] centralVertices = ResponseFetcher.getInstance().getCentralAreaFromRestServer();
-        return this.inPolygon(centralVertices);
-    }
-
-    /**
-     * Method to return whether a given point is inside a no-fly zone.
-     * 
-     * @return True if point is inside a no-fly zone. False otherwise.
-     */
-    public boolean inNoFlyZone(WorldState worldState) {
-        NoFlyZone[] noFlyZones = worldState.getNoFlyZones();
-        for (NoFlyZone noFlyZone : noFlyZones) {
-            if (this.inPolygon(noFlyZone.getCoordinatesLngLat())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

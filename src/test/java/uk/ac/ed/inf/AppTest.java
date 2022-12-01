@@ -27,41 +27,6 @@ public class AppTest
     }
 
     /**
-     * Test for the inCentralArea() method in the LngLat record.
-     * @throws IOException If the REST server is not available or base url is invalid.
-     */
-    @Test
-    public void inCentralAreaTest() throws IOException {
-        LngLat withinCentralArea = new LngLat(-3.19000, 55.944617);
-        LngLat outsideCentralArea = new LngLat(-4, 58);
-        LngLat forrestHillPoint = new LngLat(-3.192473, 55.946233);
-        LngLat onTheEdge = new LngLat(-3.192473, 55.943);
-
-        assertTrue(withinCentralArea.inCentralArea());
-        assertFalse(outsideCentralArea.inCentralArea());
-        assertTrue(forrestHillPoint.inCentralArea()); // Vertice should be inside central area.
-        assertTrue(onTheEdge.inCentralArea()); // An edge of the central area should be considered inside
-    }
-
-    @Test
-    public void inNoFlyZoneTest() throws IOException {
-        LngLat inGsGarden = new LngLat(-3.188393466950572, 55.943952704696954);
-        LngLat inEiq = new LngLat(-3.1902565248433348, 55.945120512244245);
-        LngLat inPotterrow = new LngLat(-3.1894540474406767, 55.945558262680095);
-        LngLat bayes = new LngLat(-3.1876455472986436, 55.94518995314348);
-        LngLat bayesEdgeCase = new LngLat(-3.187525376802995,55.94518429292029);
-        LngLat outsidePotterrow = new LngLat(-3.1893999244256577, 55.94551504105377);
-
-        WorldState worldState = new WorldState(LocalDate.parse("2023-01-01"));
-        assertTrue(inGsGarden.inNoFlyZone(worldState));
-        assertTrue(inEiq.inNoFlyZone(worldState));
-        assertTrue(inPotterrow.inNoFlyZone(worldState));
-        assertTrue(bayes.inNoFlyZone(worldState));
-        assertFalse(bayesEdgeCase.inNoFlyZone(worldState));
-        assertFalse(outsidePotterrow.inNoFlyZone(worldState));
-    }
-
-    /**
      * Test for the distanceTo() method in the LngLat record.
      */
     @Test
