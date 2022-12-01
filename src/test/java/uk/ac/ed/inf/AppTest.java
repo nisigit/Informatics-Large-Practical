@@ -19,7 +19,7 @@ public class AppTest
 
     @Before
     public void setUp() throws MalformedURLException {
-        ResponseFetcher.getInstance().setBaseUrl("https://ilp-rest.azurewebsites.net/");
+        DataFetcher.getInstance().setBaseUrl("https://ilp-rest.azurewebsites.net/");
     }
 
     /**

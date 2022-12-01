@@ -1,5 +1,6 @@
 package uk.ac.ed.inf;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.PriorityQueue;
@@ -20,11 +21,13 @@ public class Drone {
      */
     public static final double MOVE_LENGTH = 0.00015;
 
+    /**
+     * LngLat object representing the coordinates of Appleton Tower.
+     */
+    public static final LngLat APPLETON_TOWER_COORDINATES = new LngLat(-3.186874, 55.944494);
+
     // LngLat object representing a drone's starting location.
     private final LngLat startPos;
-
-    // WorldState object containing information about orders, flying zones, restaurants, etc.
-    private final WorldState worldState;
 
     // LngLat object representing the drone's current location.
     private LngLat currentPos;
@@ -43,16 +46,13 @@ public class Drone {
 
     /**
      * Constructor to initialise a new drone object.
-     * @param worldState WorldState object containing information about orders,
-     *                   flying zones, restaurants, etc.
      */
-    public Drone(WorldState worldState) {
-        this.worldState = worldState;
-        this.startPos = worldState.getDroneStartPos();
+    public Drone() {
+        this.startPos = APPLETON_TOWER_COORDINATES;
         this.currentPos = this.startPos;
-        this.movesRemaining = MAX_DRONE_MOVES;
+        this.movesRemaining = Drone.MAX_DRONE_MOVES;
         this.fullDronePath = new ArrayList<>();
-        this.pathFinder = new PathFinder(worldState);
+        this.pathFinder = new PathFinder();
         this.startTime = System.nanoTime();
     }
 
@@ -61,7 +61,8 @@ public class Drone {
      * orders based on the number of moves required to deliver them, and then only delivers
      * an order if the drone has enough moves remaining to do so.
      */
-    public void deliverOrders() {
+    public void deliverOrders() throws IOException {
+        // Get valid orders prioritised by less moves required to deliver them.
         PriorityQueue<Order> orderPriorityQueue = this.getOrderQueue();
         while (orderPriorityQueue.size() > 0) {
             // Getting the next valid order with the least moves required to deliver it.
@@ -103,7 +104,7 @@ public class Drone {
      * @param order Order object representing the order for which the full delivery path is to be found.
      * @return ArrayList of PathStep objects representing the full path for collecting and delivering an order.
      */
-    private ArrayList<PathStep> getFullDeliveryPath(Order order) {
+    private ArrayList<PathStep> getFullDeliveryPath(Order order) throws IOException {
         LngLat restLocation = order.getRestaurant().getLngLat();
         ArrayList<PathStep> pathToRestaurant = this.pathFinder.findPath(this.currentPos, restLocation, this.startTime);
         addHoverStep(pathToRestaurant);
@@ -137,14 +138,14 @@ public class Drone {
      * of moves required to deliver them.
      * @return PriorityQueue of valid orders, sorted by the number of moves required to deliver them.
      */
-    private PriorityQueue<Order> getOrderQueue() {
+    private PriorityQueue<Order> getOrderQueue() throws IOException {
         PriorityQueue<Order> orderPriorityQueue =
-                new PriorityQueue<>(Comparator.comparingInt(Order::getMovesToRestaurant));
-        Order[] orders = this.worldState.getOrders();
+                new PriorityQueue<>(Comparator.comparingInt(Order::getMovesToDeliver));
+        Order[] orders = DataFetcher.getInstance().getOrders();
         for (Order order : orders) {
-            if (order.isOrderValid(this.worldState)) {
-                ArrayList<PathStep> pathToRestaurant = this.getFullDeliveryPath(order);
-                order.setMovesToRestaurant(pathToRestaurant.size());
+            if (order.isOrderValid()) {
+                ArrayList<PathStep> fullDeliveryPath = this.getFullDeliveryPath(order);
+                order.setMovesToDeliver(fullDeliveryPath.size());
                 orderPriorityQueue.add(order);
             }
         }

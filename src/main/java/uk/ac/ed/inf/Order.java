@@ -2,6 +2,7 @@ package uk.ac.ed.inf;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -47,11 +48,12 @@ public class Order {
     // Restaurant instance of the restaurant that the order is from.
     private Restaurant orderRestaurant;
 
-    // Integer to store the number of moves the drone has to make to get to the
-    // order's restaurant.
-    private int movesToRestaurant;
 
+    // Field to store the outcome of the order.
     private OrderOutcome orderOutcome;
+
+    // Integer to store the estimated number of moves required by the drone to deliver the order.
+    private int movesToDeliver;
 
     /**
      * Class constructor.
@@ -65,7 +67,7 @@ public class Order {
      * @return OrderOutcome instance that represents the outcome of the order.
      */
     public OrderOutcome getOrderOutcome() {
-        return orderOutcome;
+        return this.orderOutcome;
     }
 
     /**
@@ -80,23 +82,23 @@ public class Order {
      * Method to get the number of moves the drone has to make to get to the order's restaurant.
      * @return number of moves the drone has to make to get to the order's restaurant.
      */
-    public int getMovesToRestaurant() {
-        return movesToRestaurant;
+    public int getMovesToDeliver() {
+        return this.movesToDeliver;
     }
 
     /**
      * Method to set the number of moves the drone has to make to get to the order's restaurant.
-     * @param movesToRestaurant number of moves the drone has to make to get to the order's restaurant.
+     * @param movesToDeliver number of moves the drone has to make to get to the order's restaurant.
      */
-    public void setMovesToRestaurant(int movesToRestaurant) {
-        this.movesToRestaurant = movesToRestaurant;
+    public void setMovesToDeliver(int movesToDeliver) {
+        this.movesToDeliver = movesToDeliver;
     }
 
     /**
      * Method to get the delivery cost (in pence) of the order.
      * @return delivery cost (in pence) of the order.
      */
-    public int getDeliveryCost() {
+    private int getDeliveryCost() {
         if (this.orderRestaurant == null) {
             if (this.orderOutcome == null) {
                 throw new IllegalArgumentException("Check order validity before getting delivery cost");
@@ -142,10 +144,9 @@ public class Order {
      * Method to check if a given order is valid for a given world state. If the
      * order is valid, the method sets the order outcome to OrderOutcome.ValidButNotDelivered,
      * and the order restaurant to the restaurant that the order is from.
-     * @param worldState The world state for a particular dat to check the order against.
      * @return True if the order is valid for the given world state, false otherwise.
      */
-    public boolean isOrderValid(WorldState worldState) {
+    public boolean isOrderValid() throws IOException {
         // The number of pizzas ordered must be greater than 0 and up to 5.
         if (this.orderItems.length < 1 || this.orderItems.length > 5) {
             this.orderOutcome = OrderOutcome.InvalidPizzaCount;
@@ -156,7 +157,7 @@ public class Order {
             return false;
         }
 
-        Restaurant[] participants = worldState.getRestaurants();
+        Restaurant[] participants = DataFetcher.getInstance().getRestaurants();
         if (!this.areItemsValid(participants)) {
             return false;
         }

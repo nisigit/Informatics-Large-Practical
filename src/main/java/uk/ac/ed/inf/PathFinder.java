@@ -1,22 +1,18 @@
 package uk.ac.ed.inf;
 
 import java.awt.geom.Line2D;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
 public class PathFinder {
 
-    // Field to store a WorldState object, which has information about flying zones, so that the pathfinder
-    // can avoid breaking any requirements for the drone's flight.
-    private final WorldState worldState;
-
     /**
      * Constructor to initialise a new PathFinder object.
-     * @param worldState WorldState object containing information about orders, flying zones, restaurants, etc.
      */
-    public PathFinder(WorldState worldState) {
-        this.worldState = worldState;
+    public PathFinder() {
+
     }
 
     /**
@@ -27,7 +23,7 @@ public class PathFinder {
      * @param startTime The time at which the drone started calculating paths.
      * @return An ArrayList of LngLat points representing the path. Null if no path is found.
      */
-    public ArrayList<PathStep> findPath(LngLat start, LngLat end, long startTime) {
+    public ArrayList<PathStep> findPath(LngLat start, LngLat end, long startTime) throws IOException {
         // Priority queue to store the nodes to be explored, sorted by their fCost.
         PriorityQueue<PathStep> openList = new PriorityQueue<>(Comparator.comparingDouble(PathStep::getFCost));
         ArrayList<PathStep> closedList = new ArrayList<>();
@@ -91,9 +87,10 @@ public class PathFinder {
      * @param curLngLat       start of the path.
      * @param neighbourLngLat end of the path.
      * @return True if the path crosses a no-fly zone boundary, false otherwise.
+     * @throws IOException If the no-fly zones cannot be fetched from the REST server.
      */
-    private boolean pathCrossesNoFlyZone(LngLat curLngLat, LngLat neighbourLngLat) {
-        NoFlyZone[] noFlyZones = this.worldState.getNoFlyZones();
+    private boolean pathCrossesNoFlyZone(LngLat curLngLat, LngLat neighbourLngLat) throws IOException {
+        NoFlyZone[] noFlyZones = DataFetcher.getInstance().getNoFlyZones();
         for (NoFlyZone noFlyZone : noFlyZones) {
             LngLat[] nfz = noFlyZone.getCoordinatesLngLat();
             for (int i = 0; i < nfz.length - 1; i++) {
@@ -112,9 +109,10 @@ public class PathFinder {
      * @param curLngLat       start of the path.
      * @param neighbourLngLat end of the path.
      * @return True if the path crosses the central area boundary, false otherwise.
+     * @throws IOException If the central area cannot be fetched from the REST server.
      */
-    private boolean pathCrossesCentralAreaBoundary(LngLat curLngLat, LngLat neighbourLngLat) {
-        LngLat[] centralAreaVertices = this.worldState.getCentralAreaVertices();
+    private boolean pathCrossesCentralAreaBoundary(LngLat curLngLat, LngLat neighbourLngLat) throws IOException {
+        LngLat[] centralAreaVertices = DataFetcher.getInstance().getCentralArea();
         for (int i = 0; i < centralAreaVertices.length - 1; i++) {
             LngLat caVertex1 = centralAreaVertices[i];
             LngLat caVertex2 = centralAreaVertices[i + 1];

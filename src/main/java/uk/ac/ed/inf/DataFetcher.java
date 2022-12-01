@@ -10,18 +10,29 @@ import java.time.LocalDate;
 /**
  * Singleton class to fetch responses from the REST server.
  */
-public class ResponseFetcher {
+public class DataFetcher {
 
     // Singleton class object.
-    private static ResponseFetcher responseFetcher;
+    private static DataFetcher dataFetcher;
 
     // Field to store the base url of the REST server.
     private URL baseUrl;
 
+    // Field to store the date for which data is being fetched and stored.
+    private LocalDate date;
+
+    private Order[] orders;
+
+    private Restaurant[] restaurants;
+
+    private NoFlyZone[] noFlyZones;
+
+    private LngLat[] centralArea;
+
     /**
      * Class constructor.
      */
-    private ResponseFetcher() {
+    private DataFetcher() {
 
     }
 
@@ -29,11 +40,11 @@ public class ResponseFetcher {
      * Method to return the single instance of the ResponseFetcher singleton class.
      * @return instance of the ResponseFetcher singleton class.
      */
-    public static ResponseFetcher getInstance() {
-        if (responseFetcher == null) {
-            responseFetcher = new ResponseFetcher();
+    public static DataFetcher getInstance() {
+        if (dataFetcher == null) {
+            dataFetcher = new DataFetcher();
         }
-        return responseFetcher;
+        return dataFetcher;
     }
 
     /**
@@ -46,6 +57,15 @@ public class ResponseFetcher {
             baseUrlString += "/"; // Ensuring url ends with a slash so endpoints can be appended.
         }
         this.baseUrl = new URL(baseUrlString);
+    }
+
+
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
+
+    public LocalDate getDate() {
+        return this.date;
     }
 
     /**
@@ -72,32 +92,28 @@ public class ResponseFetcher {
      * @return An ArrayList of LngLat objects representing the vertices of the central area.
      * @throws IOException If the REST server is not available or base url is invalid.
      */
-    public LngLat[] getCentralAreaFromRestServer() throws IOException {
-        return getResponseFromRestServer("centralArea", LngLat[].class);
-    }
-
-    /**
-     * Method to get an array of Order objects representing all the orders in the
-     * system from the REST server.
-     * @return An array of Order objects representing all the orders fetched from
-     *         the REST server.
-     * @throws IOException If the REST server is not running or the base url is invalid.
-     */
-    public Order[] getOrdersFromRestServer() throws IOException {
-        return getResponseFromRestServer("orders", Order[].class);
+    public LngLat[] getCentralArea() throws IOException {
+        if (this.centralArea == null) {
+            this.centralArea = this.getResponseFromRestServer("centralarea", LngLat[].class);
+        }
+        return this.centralArea;
     }
 
     /**
      * Method to get an array of Order objects representing the orders fetched from
      * the REST server for a given date.
-     * @param date LocalDate object representing the date for which the orders are
-     *             to be fetched.
      * @return An array of Order objects representing the orders fetched from the REST server.
      * @throws IOException If the REST server is not running or the base url is invalid.
      */
-    public Order[] getOrdersFromRestServer(LocalDate date) throws IOException {
-        String endPoint = "orders/" + date;
-        return getResponseFromRestServer(endPoint, Order[].class);
+    public Order[] getOrders() throws IOException {
+        if (this.date == null) {
+            throw new IllegalStateException("Please set the date for which orders are to be fetched.");
+        }
+        if (this.orders == null) {
+            String endPoint = "orders/" + this.date;
+            this.orders = this.getResponseFromRestServer(endPoint, Order[].class);
+        }
+        return this.orders;
     }
 
     /**
@@ -107,8 +123,11 @@ public class ResponseFetcher {
      *         from the REST server.
      * @throws IOException If the REST server is not running or the base url is invalid.
      */
-    public Restaurant[] getRestaurantsFromRestServer() throws IOException {
-        return getResponseFromRestServer("restaurants", Restaurant[].class);
+    public Restaurant[] getRestaurants() throws IOException {
+        if (this.restaurants == null) {
+            this.restaurants = this.getResponseFromRestServer("restaurants", Restaurant[].class);
+        }
+        return this.restaurants;
     }
 
     /**
@@ -118,8 +137,11 @@ public class ResponseFetcher {
      *         from the REST server.
      * @throws IOException If the REST server is not running or the base url is invalid.
      */
-    public NoFlyZone[] getNoFlyZonesFromRestServer() throws IOException {
-        return getResponseFromRestServer("noFlyZones", NoFlyZone[].class);
+    public NoFlyZone[] getNoFlyZones() throws IOException {
+        if (this.noFlyZones == null) {
+            this.noFlyZones = this.getResponseFromRestServer("noflyzones", NoFlyZone[].class);
+        }
+        return this.noFlyZones;
     }
 
 }

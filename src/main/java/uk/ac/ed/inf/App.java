@@ -1,5 +1,6 @@
 package uk.ac.ed.inf;
 
+import java.io.IOException;
 import java.time.LocalDate;
 
 /**
@@ -10,13 +11,10 @@ public class App {
     /**
      * Calls the deliverOrders() method in the Drone class to deliver valid orders on a given day, and
      * prints the number of valid orders, number of delivered orders and remaining moves of the drone.
-     * @param worldState the world state for the drone to deliver orders in.
+     * @param drone Drone object representing the drone that delivered orders.
      */
-    private static void makeDeliveries(WorldState worldState, Drone drone) {
-        System.out.println("Delivering orders for date: " + worldState.getDate());
-        drone.deliverOrders();
-
-        Order[] orders = worldState.getOrders();
+    private static void printDeliveryInformation(Drone drone) throws IOException {
+        Order[] orders = DataFetcher.getInstance().getOrders();
         int validCount = 0;
         int delivered = 0;
         for (Order order : orders) {
@@ -44,19 +42,19 @@ public class App {
             System.out.println(baseUrl);
 
             // Setting the base url of the REST server in the ResponseFetcher class.
-            ResponseFetcher responseFetcher = ResponseFetcher.getInstance();
-            responseFetcher.setBaseUrl(baseUrl);
-
-            // Initialise the world state for given date.
-            WorldState worldState = new WorldState(date);
+            DataFetcher dataFetcher = DataFetcher.getInstance();
+            dataFetcher.setBaseUrl(baseUrl);
+            dataFetcher.setDate(date);
 
             // Initialise the drone object.
-            Drone drone = new Drone(worldState);
+            Drone drone = new Drone();
 
-            makeDeliveries(worldState, drone); // Deliver orders for the given date.
-            JsonMaker.createDeliveriesJson(worldState); // Create deliveries JSON file.
-            JsonMaker.createFlightPathJson(drone, worldState); // Create JSON file for flight path.
-            JsonMaker.createDroneGeoJson(drone, worldState); // Create GeoJSON file for drone flight path.
+            System.out.println("Delivering orders for date: " + dataFetcher.getDate());
+            drone.deliverOrders();
+            printDeliveryInformation(drone); // Deliver orders for the given date.
+            JsonMaker.createDeliveriesJson(); // Create deliveries JSON file.
+            JsonMaker.createFlightPathJson(drone.getFullDronePath()); // Create JSON file for flight path.
+            JsonMaker.createDroneGeoJson(drone.getFullDronePath()); // Create GeoJSON file for drone flight path.
         } catch (Exception e) {
             e.printStackTrace();
         }
