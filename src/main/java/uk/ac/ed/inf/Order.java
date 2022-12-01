@@ -215,6 +215,22 @@ public class Order {
             this.orderOutcome = OrderOutcome.InvalidCardNumber;
             return false;
         }
+
+        // Using Luhn's algorithm to check if the credit card number is valid.
+        int digitSum = 0;
+        for (int i = 0; i < this.creditCardNumber.length(); i++) {
+            int digit = Integer.parseInt(Character.toString(this.creditCardNumber.charAt(i)));
+            if (i % 2 == 0) { // Odd digits.
+                digit *= 2;
+                digitSum += (digit / 10) + (digit % 10); // Adding the digits of the doubled number.
+            } else {
+                digitSum += digit;
+            }
+        }
+        if (digitSum % 10 != 0) { // Credit card number is invalid if the sum is not divisible by 10.
+            this.orderOutcome = OrderOutcome.InvalidCardNumber;
+            return false;
+        }
         return true;
     }
 
