@@ -38,6 +38,9 @@ public class Drone {
     // PathFinder object to plan a route between two locations.
     private final PathFinder pathFinder;
 
+    // Field to store the time when the drone was initialised, so every drone move can be timed relative to this.
+    private final long startTime;
+
     /**
      * Constructor to initialise a new drone object.
      * @param worldState WorldState object containing information about orders,
@@ -50,6 +53,7 @@ public class Drone {
         this.movesRemaining = MAX_DRONE_MOVES;
         this.fullDronePath = new ArrayList<>();
         this.pathFinder = new PathFinder(worldState);
+        this.startTime = System.nanoTime();
     }
 
     /**
@@ -65,7 +69,7 @@ public class Drone {
 
             // Full path to collect the order from the restaurant and deliver it to Appleton.
             ArrayList<PathStep> fullOrderPath =
-                    this.pathFinder.getFullDeliveryPath(this.currentPos, this.startPos, order.getRestaurant());
+                    this.getFullDeliveryPath(order);
             // If drone has enough moves to deliver the order, then deliver it.
             if (fullOrderPath.size() <= this.movesRemaining) {
                 deliverOrder(order, fullOrderPath);
@@ -93,6 +97,42 @@ public class Drone {
     }
 
     /**
+     * Method to get the full path for collecting and delivering an order. The method gets the path to collect
+     * an order from its restaurant and also the path to bring it back to the delivery location (start point).
+     * The method also calls the addHoverStep method to add hover steps for collecting and delivering an order.
+     * @param order Order object representing the order for which the full delivery path is to be found.
+     * @return ArrayList of PathStep objects representing the full path for collecting and delivering an order.
+     */
+    private ArrayList<PathStep> getFullDeliveryPath(Order order) {
+        LngLat restLocation = order.getRestaurant().getLngLat();
+        ArrayList<PathStep> pathToRestaurant = this.pathFinder.findPath(this.currentPos, restLocation, this.startTime);
+        addHoverStep(pathToRestaurant);
+        LngLat collectionPoint =  pathToRestaurant.get(pathToRestaurant.size() - 1).getToLngLat();
+
+        // Delivery is at the start position (Appleton Tower)
+        ArrayList<PathStep> pathToStart = this.pathFinder.findPath(collectionPoint, this.startPos, this.startTime);
+        addHoverStep(pathToStart);
+
+        ArrayList<PathStep> fullOrderPath = new ArrayList<>();
+        fullOrderPath.addAll(pathToRestaurant);
+        fullOrderPath.addAll(pathToStart);
+        return fullOrderPath;
+    }
+
+    /**
+     * Method to add a hover step at the end of a one-way path. This step is to simulate the drone
+     * hovering over the collection or delivery point of an order.
+     * @param path ArrayList of PathStep objects representing a one-way path.
+     */
+    private void addHoverStep(ArrayList<PathStep> path) {
+        PathStep finalStep = path.get(path.size() - 1);
+        LngLat hoverPoint = finalStep.getToLngLat();
+        PathStep hoverStep = new PathStep(hoverPoint, finalStep, null,
+                finalStep.getTargetLngLat(), System.nanoTime() - this.startTime);
+        path.add(hoverStep);
+    }
+
+    /**
      * Method to return a priority queue of valid orders, sorted in increasing order of the number
      * of moves required to deliver them.
      * @return PriorityQueue of valid orders, sorted by the number of moves required to deliver them.
@@ -103,8 +143,7 @@ public class Drone {
         Order[] orders = this.worldState.getOrders();
         for (Order order : orders) {
             if (order.isOrderValid(this.worldState)) {
-                ArrayList<PathStep> pathToRestaurant =
-                        this.pathFinder.getFullDeliveryPath(this.currentPos, this.startPos, order.getRestaurant());
+                ArrayList<PathStep> pathToRestaurant = this.getFullDeliveryPath(order);
                 order.setMovesToRestaurant(pathToRestaurant.size());
                 orderPriorityQueue.add(order);
             }
