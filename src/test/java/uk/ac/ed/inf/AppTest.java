@@ -3,9 +3,7 @@ package uk.ac.ed.inf;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
-import java.time.LocalDate;
 
 import static org.junit.Assert.*;
 
@@ -14,8 +12,6 @@ import static org.junit.Assert.*;
  */
 public class AppTest 
 {
-
-    public static final double DISTANCE_TOLERANCE = 0.00015;
 
     public AppTest() {
 

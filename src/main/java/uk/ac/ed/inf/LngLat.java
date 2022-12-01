@@ -12,33 +12,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public record LngLat(@JsonProperty("longitude") double lng, @JsonProperty("latitude") double lat) {
 
     /**
-     * Method to check if the current LngLat point is close inside a polygon.
-     * @param polygon An array of LngLat objects representing the vertices of the polygon.
-     * @return true if the current LngLat point is inside the polygon, false otherwise.
-     */
-    private boolean inPolygon(LngLat[] polygon) {
-        int numPoints = polygon.length;
-        boolean isInside = false;
-        for (int i = 0, j = numPoints - 1; i < numPoints; j = i++) {
-            // If the point is on the edge of the polygon, return true.
-            if (this.distanceTo(polygon[i]) + this.distanceTo(polygon[j]) ==
-                    polygon[i].distanceTo(polygon[j])) {
-                return true;
-            }
-            // Whether the latitude of vertex is north of this point and that of the other is south.
-            boolean isNorthSouth = (polygon[i].lat > this.lat) != (polygon[j].lat > this.lat);
-            // Whether the edge will intersect a ray towards positive x-axis (east) of the point.
-            boolean eastIntersect = (this.lng < ((polygon[j].lng - polygon[i].lng) *
-                    (this.lat - polygon[i].lat) / (polygon[j].lat - polygon[i].lat)) +
-                    polygon[i].lng);
-            if (isNorthSouth && eastIntersect) {
-                isInside = !isInside;
-            }
-        }
-        return isInside;
-    }
-
-    /**
      * Method to return the Euclidean distance between the current point and another point.
      * @param otherPoint the point distance is being calculated to.
      * @return The Euclidean distance between the current point and otherPoint.
