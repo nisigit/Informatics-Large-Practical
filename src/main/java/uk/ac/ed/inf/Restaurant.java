@@ -52,6 +52,10 @@ public class Restaurant {
         return menuItemPrices;
     }
 
+    /**
+     * Method to get the LngLat instance representing the location of the restaurant.
+     * @return LngLat instance representing the location of the restaurant.
+     */
     public LngLat getLngLat() {
         if (this.restLngLat == null) {
             this.restLngLat = new LngLat(this.lng, this.lat);

@@ -9,7 +9,7 @@ import java.time.LocalDate;
 public class WorldState {
 
     /**
-     * LngLat to represent the coordinates of Appleton tower, which is also the drone's starting position.
+     * LngLat to represent the coordinates of Appleton Tower, which is also the drone's starting position.
      */
     public static final LngLat APPLETON_TOWER_COORDINATES = new LngLat(-3.186874, 55.944494);
 

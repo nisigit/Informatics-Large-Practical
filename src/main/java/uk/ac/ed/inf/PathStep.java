@@ -11,7 +11,7 @@ import java.util.Objects;
 public class PathStep {
 
     /**
-     * Weighting factor for the h cost of a node (step) in the weighted A* search algorithm.
+     * Weighting factor for the h cost of a node/step in the weighted A* search algorithm.
      */
     private static final double H_WEIGHT = 1.5;
 
