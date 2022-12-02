@@ -35,15 +35,14 @@ public class Drone {
     // Number the moves the drone has remaining, before it runs out of battery.
     private int movesRemaining;
 
-    // List storing all the steps taken by the drone for the current day.
-    private ArrayList<PathStep> fullDronePath;
-
+    // List storing all the moves made by the drone in the day.
     private ArrayList<DroneMove> allDroneMoves;
 
     // PathFinder object to plan a route between two locations.
     private final PathFinder pathFinder;
 
-    // Field to store the time when the drone was initialised, so every drone move can be timed relative to this.
+    // Field to store the time when the drone was initialised, so every calculated drone move
+    // can be timed relative to this.
     private final long startTime;
 
     /**
@@ -53,7 +52,6 @@ public class Drone {
         this.startPos = APPLETON_TOWER_COORDINATES;
         this.currentPos = this.startPos;
         this.movesRemaining = Drone.MAX_DRONE_MOVES;
-        this.fullDronePath = new ArrayList<>();
         this.allDroneMoves = new ArrayList<>();
         this.pathFinder = new PathFinder();
         this.startTime = System.nanoTime();
@@ -65,19 +63,18 @@ public class Drone {
      * an order if the drone has enough moves remaining to do so.
      */
     public void deliverOrders() throws IOException {
-        // Get valid orders prioritised by less moves required to deliver them.
+        // Get valid orders prioritised by fewer moves required to deliver them.
         PriorityQueue<Order> orderPriorityQueue = this.getOrderQueue();
         while (orderPriorityQueue.size() > 0) {
             // Getting the next valid order with the least moves required to deliver it.
             Order order = orderPriorityQueue.poll();
 
-            // Full path to collect the order from the restaurant and deliver it to Appleton.
+            // Get full path to collect the order from the restaurant and deliver it back to drone's start position.
             ArrayList<DroneMove> fullOrderPath = this.getFullOrderPath(order);
-//            ArrayList<PathStep> fullOrderPath = this.getFullDeliveryPath(order);
+
             // If drone has enough moves to deliver the order, then deliver it.
             if (fullOrderPath.size() <= this.movesRemaining) {
-                delOrder(order, fullOrderPath);
-//                deliverOrder(order, fullOrderPath);
+                deliverOrder(order, fullOrderPath);
             } else { // drone does not have enough battery to deliver any more orders.
                 break;
             }
@@ -85,31 +82,20 @@ public class Drone {
     }
 
     /**
-     * Method to simulate delivering a single order by a drone. The method calls the getFullDeliveryPath in
-     * PathFinder to get the full path for collecting and delivering an order, and also updates the drone's
-     * current position, drone's moves remaining, the order no. for which each step was taken, and
-     * the order's outcome. The method also adds the steps taken to the drone's full path.
-     * @param order Order object representing the order to be delivered by the drone.
+     * Method to simulate delivering an order by the drone. It updates the drone's position and moves
+     * remaining, step-by-step, as it delivers the order, and finally adds all the moves made to the list
+     * of all moves made by the drone in the day and updates the order's outcome to OrderOutcome.Delivered.
+     * @param order Order object representing the order being delivered by the drone.
+     * @param fullOrderPath ArrayList of DroneMove objects representing the individual moves the drone must
+     *                      take to successfully collect and deliver the order.
      */
-    private void deliverOrder(Order order, ArrayList<PathStep> fullOrderPath) {
-        for (PathStep pathStep : fullOrderPath) {
-            pathStep.setOrderNo(order.getOrderNo());
-            this.fullDronePath.add(pathStep);
-            this.currentPos = pathStep.getToLngLat();
-            this.movesRemaining--;
-        }
-        order.setOrderOutcome(OrderOutcome.Delivered);
-        System.out.println("Moves remaining: " + this.movesRemaining);
-    }
-
-    private void delOrder(Order order, ArrayList<DroneMove> fullOrderPath) {
+    private void deliverOrder(Order order, ArrayList<DroneMove> fullOrderPath) {
         for (DroneMove droneMove : fullOrderPath) {
             this.allDroneMoves.add(droneMove);
             this.currentPos = droneMove.toLngLat();
             this.movesRemaining--;
         }
         order.setOrderOutcome(OrderOutcome.Delivered);
-        System.out.println("Moves remaining: " + this.movesRemaining);
     }
 
     /**
@@ -118,31 +104,17 @@ public class Drone {
      * The method also calls the addHoverStep method to add hover steps for collecting and delivering an order.
      * @param order Order object representing the order for which the full delivery path is to be found.
      * @return ArrayList of PathStep objects representing the full path for collecting and delivering an order.
+     * @throws IOException If information about no-fly zones or central area points cannot be read from the
+     *                    REST server.
      */
-    private ArrayList<PathStep> getFullDeliveryPath(Order order) throws IOException {
-        LngLat restLocation = order.getRestaurant().getLngLat();
-        ArrayList<PathStep> pathToRestaurant = this.pathFinder.findPath(this.currentPos, restLocation, this.startTime);
-        addHoverStep(pathToRestaurant);
-        LngLat collectionPoint =  pathToRestaurant.get(pathToRestaurant.size() - 1).getToLngLat();
-
-        // Delivery is at the start position (Appleton Tower)
-        ArrayList<PathStep> pathToStart = this.pathFinder.findPath(collectionPoint, this.startPos, this.startTime);
-        addHoverStep(pathToStart);
-
-        ArrayList<PathStep> fullOrderPath = new ArrayList<>();
-        fullOrderPath.addAll(pathToRestaurant);
-        fullOrderPath.addAll(pathToStart);
-        return fullOrderPath;
-    }
-
     private ArrayList<DroneMove> getFullOrderPath(Order order) throws IOException {
         LngLat restLocation = order.getRestaurant().getLngLat();
-        ArrayList<Node> pointsToRestaurant = this.pathFinder.calculatePath(this.currentPos, restLocation, this.startTime);
+        ArrayList<Node> pointsToRestaurant = this.pathFinder.findPath(this.currentPos, restLocation, this.startTime);
         ArrayList<DroneMove> collectionMoves = this.createDroneSteps(pointsToRestaurant, order);
 
         LngLat collectionPoint = pointsToRestaurant.get(pointsToRestaurant.size() - 1).getLngLat();
 
-        ArrayList<Node> pointsToStart = this.pathFinder.calculatePath(collectionPoint, this.startPos, this.startTime);
+        ArrayList<Node> pointsToStart = this.pathFinder.findPath(collectionPoint, this.startPos, this.startTime);
         ArrayList<DroneMove> deliveryMoves = this.createDroneSteps(pointsToStart, order);
 
         ArrayList<DroneMove> fullOrderPath = new ArrayList<>();
@@ -151,20 +123,35 @@ public class Drone {
         return fullOrderPath;
     }
 
+    /**
+     * Method to create a list of DroneMove objects, representing each move the drone must make to follow points
+     * in a one-way route between two locations. The method also calls the addHoverStep method to add a hover
+     * step at the end of all moves, to represent the drone hovering at delivery and collection points of an order.
+     * @param pathPoints ArrayList of Node objects representing the points in the route between two locations.
+     * @param order Order object representing the order being delivered by the drone.
+     * @return ArrayList of DroneMove objects representing the moves the drone must make to follow the route between
+     * two locations.
+     */
     private ArrayList<DroneMove> createDroneSteps(ArrayList<Node> pathPoints, Order order) {
         ArrayList<DroneMove> droneMoves = new ArrayList<>();
         for (int i = 0; i < pathPoints.size() - 1; i++) {
             Node fromNode = pathPoints.get(i);
             Node toNode = pathPoints.get(i + 1);
             DroneMove droneMove = new DroneMove(fromNode.getLngLat(), toNode.getLngLat(), toNode.getAngleFromParent(),
-                    System.nanoTime() - this.startTime, order.getOrderNo());
+                    toNode.getTicksSinceStartOfCalculation(), order.getOrderNo());
             droneMoves.add(droneMove);
         }
-        addHover(droneMoves);
+        addHoverMove(droneMoves);
         return droneMoves;
     }
 
-    private void addHover(ArrayList<DroneMove> droneMoves) {
+    /**
+     * Method to add a hover move to the end of a list of DroneMove objects, to represent the drone hovering at
+     * delivery and collection points of an order.
+     * @param droneMoves ArrayList of DroneMove objects representing the moves the drone must make to follow the
+     *                   route between two locations.
+     */
+    private void addHoverMove(ArrayList<DroneMove> droneMoves) {
         DroneMove lastMove = droneMoves.get(droneMoves.size() - 1);
         LngLat hoverPoint = lastMove.toLngLat();
         DroneMove hoverMove = new DroneMove(hoverPoint, hoverPoint, null,
@@ -173,22 +160,10 @@ public class Drone {
     }
 
     /**
-     * Method to add a hover step at the end of a one-way path. This step is to simulate the drone
-     * hovering over the collection or delivery point of an order.
-     * @param path ArrayList of PathStep objects representing a one-way path.
-     */
-    private void addHoverStep(ArrayList<PathStep> path) {
-        PathStep finalStep = path.get(path.size() - 1);
-        LngLat hoverPoint = finalStep.getToLngLat();
-        PathStep hoverStep = new PathStep(hoverPoint, finalStep, null,
-                finalStep.getTargetLngLat(), System.nanoTime() - this.startTime);
-        path.add(hoverStep);
-    }
-
-    /**
      * Method to return a priority queue of valid orders, sorted in increasing order of the number
      * of moves required to deliver them.
      * @return PriorityQueue of valid orders, sorted by the number of moves required to deliver them.
+     * @throws IOException If data from the REST server cannot be read.
      */
     private PriorityQueue<Order> getOrderQueue() throws IOException {
         PriorityQueue<Order> orderPriorityQueue =
@@ -197,7 +172,6 @@ public class Drone {
         for (Order order : orders) {
             if (order.isOrderValid()) {
                 ArrayList<DroneMove> fullDeliveryPath = this.getFullOrderPath(order);
-//                ArrayList<PathStep> fullDeliveryPath = this.getFullDeliveryPath(order);
                 order.setMovesToDeliver(fullDeliveryPath.size());
                 orderPriorityQueue.add(order);
             }
@@ -214,14 +188,10 @@ public class Drone {
     }
 
     /**
-     * Method to get the full flight path, consisting of individual steps, taken by the drone on a given day.
-     * @return ArrayList of PathStep, with each PathStep object representing
-     * a step taken by the drone on a given day.
+     * Method to get the full flight path (all moves made by the drone), consisting of individual moves, taken
+     * by the drone on a given day.
+     * @return ArrayList of DroneMove objects, with each DroneMove object representing a move made by the drone.
      */
-    public ArrayList<PathStep> getFullDronePath() {
-        return this.fullDronePath;
-    }
-
     public ArrayList<DroneMove> getAllDroneMoves() {
         return allDroneMoves;
     }

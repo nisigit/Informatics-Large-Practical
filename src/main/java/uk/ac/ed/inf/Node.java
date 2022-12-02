@@ -2,8 +2,17 @@ package uk.ac.ed.inf;
 
 import java.util.Objects;
 
+/**
+ * Class to represent a node in the A* search pathfinding algorithm. This class
+ * implements the Comparable interface, so that nodes can be compared and sorted
+ * based on their weighted F cost.
+ */
 public class Node {
 
+    /**
+     * Weighting factor for the heuristic (h cost - estimated number of moves to the target point)
+     * in the weighted A* search algorithm.
+     */
     private static final double H_WEIGHT = 1.5;
 
     // Field to represent the parent node (point before) of this node.

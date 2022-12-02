@@ -63,27 +63,7 @@ public class JsonMaker {
         writeToFile(writePath, deliveries);
     }
 
-
-
-    public static void createFlightPathJson(ArrayList<PathStep> fullDronePath) throws IOException {
-        ArrayNode flightPath = OBJECT_MAPPER.createArrayNode();
-        for (PathStep pathStep : fullDronePath) {
-            ObjectNode stepNode = OBJECT_MAPPER.createObjectNode();
-            PathStep prevStep = pathStep.getPrevStep();
-            stepNode.put("orderNo", pathStep.getOrderNo());
-            stepNode.put("fromLongitude", prevStep.getToLngLat().lng());
-            stepNode.put("fromLatitude", prevStep.getToLngLat().lat());
-            stepNode.put("angle", pathStep.getStepDirectionAngle());
-            stepNode.put("toLongitude", pathStep.getToLngLat().lng());
-            stepNode.put("toLatitude", pathStep.getToLngLat().lat());
-            stepNode.put("ticksSinceStartOfCalculation", pathStep.getTicksSinceStartOfCalculation());
-            flightPath.add(stepNode);
-        }
-        String filePath = "flightpath-" + DataFetcher.getInstance().getDate() + ".json";
-        writeToFile(filePath, flightPath);
-    }
-
-    public static void createDronePathJson(ArrayList<DroneMove> allDroneMoves) throws IOException {
+    public static void createFlightPathJson(ArrayList<DroneMove> allDroneMoves) throws IOException {
         ArrayNode flightPath = OBJECT_MAPPER.createArrayNode();
         for (DroneMove droneMove : allDroneMoves) {
             ObjectNode moveNode = OBJECT_MAPPER.createObjectNode();
@@ -96,31 +76,36 @@ public class JsonMaker {
             moveNode.put("ticksSinceStartOfCalculation", droneMove.ticksSinceStartOfCalculation());
             flightPath.add(moveNode);
         }
-        String filePath = "dp-" + DataFetcher.getInstance().getDate() + ".json";
+        String filePath = "flightpath-" + DataFetcher.getInstance().getDate() + ".json";
         writeToFile(filePath, flightPath);
     }
 
-    public static void createDroneGeoJson(ArrayList<PathStep> fullDronePath) throws IOException {
-        ObjectNode featureCollection = OBJECT_MAPPER.createObjectNode();
-        ArrayNode features = OBJECT_MAPPER.createArrayNode();
-        ObjectNode feature = OBJECT_MAPPER.createObjectNode();
-        features.add(feature);
-        feature.put("type", "Feature");
-        featureCollection.put("type", "FeatureCollection");
-        featureCollection.set("features", features);
-        ObjectNode properties = OBJECT_MAPPER.createObjectNode();
-        ObjectNode geometry = OBJECT_MAPPER.createObjectNode();
-        feature.set("properties", properties);
-        feature.set("geometry", geometry);
-        geometry.put("type", "LineString");
+    public static void createDroneGeoJson(ArrayList<DroneMove> allDroneMoves) throws IOException {
         ArrayNode coordinates = OBJECT_MAPPER.createArrayNode();
-        geometry.set("coordinates", coordinates);
-        for (PathStep pathStep : fullDronePath) {
+        for (DroneMove droneMove : allDroneMoves) {
             ArrayNode coordinate = OBJECT_MAPPER.createArrayNode();
-            coordinate.add(pathStep.getToLngLat().lng());
-            coordinate.add(pathStep.getToLngLat().lat());
+            coordinate.add(droneMove.toLngLat().lng());
+            coordinate.add(droneMove.toLngLat().lat());
             coordinates.add(coordinate);
         }
+        ObjectNode geometry = OBJECT_MAPPER.createObjectNode();
+        geometry.put("type", "LineString");
+        geometry.set("coordinates", coordinates);
+
+        ObjectNode properties = OBJECT_MAPPER.createObjectNode();
+
+        ObjectNode feature = OBJECT_MAPPER.createObjectNode();
+        feature.put("type", "Feature");
+        feature.set("properties", properties);
+        feature.set("geometry", geometry);
+
+        ArrayNode features = OBJECT_MAPPER.createArrayNode();
+        features.add(feature);
+
+        ObjectNode featureCollection = OBJECT_MAPPER.createObjectNode();
+        featureCollection.put("type", "FeatureCollection");
+        featureCollection.set("features", features);
+
         String fileName = "drone-" + DataFetcher.getInstance().getDate() + ".geojson";
         writeToFile(fileName, featureCollection);
     }

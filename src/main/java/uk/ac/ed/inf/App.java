@@ -12,6 +12,7 @@ public class App {
      * Calls the deliverOrders() method in the Drone class to deliver valid orders on a given day, and
      * prints the number of valid orders, number of delivered orders and remaining moves of the drone.
      * @param drone Drone object representing the drone that delivered orders.
+     * @throws IOException if the orders could not be fetched from the REST server.
      */
     private static void printDeliveryInformation(Drone drone) throws IOException {
         Order[] orders = DataFetcher.getInstance().getOrders();
@@ -41,7 +42,8 @@ public class App {
             String baseUrl = args[1];
             System.out.println(baseUrl);
 
-            // Setting the base url of the REST server in the ResponseFetcher class.
+            // Setting the base url of the REST server in the ResponseFetcher class, and the date for which
+            // data is being fetched.
             DataFetcher dataFetcher = DataFetcher.getInstance();
             dataFetcher.setBaseUrl(baseUrl);
             dataFetcher.setDate(date);
@@ -51,11 +53,12 @@ public class App {
 
             System.out.println("Delivering orders for date: " + dataFetcher.getDate());
             drone.deliverOrders();
+
             printDeliveryInformation(drone); // Deliver orders for the given date.
-//            JsonMaker.createDeliveriesJson(); // Create deliveries JSON file.
-//            JsonMaker.createFlightPathJson(drone.getFullDronePath()); // Create JSON file for flight path.
-//            JsonMaker.createDroneGeoJson(drone.getFullDronePath()); // Create GeoJSON file for drone flight path.
-            JsonMaker.createDronePathJson(drone.getAllDroneMoves()); // Create JSON file for drone flight path
+
+            JsonMaker.createDeliveriesJson(); // Create deliveries JSON file.
+            JsonMaker.createFlightPathJson(drone.getAllDroneMoves()); // Create JSON file for flight path.
+            JsonMaker.createDroneGeoJson(drone.getAllDroneMoves()); // Create GeoJSON file for drone flight path.
         } catch (Exception e) {
             e.printStackTrace();
         }

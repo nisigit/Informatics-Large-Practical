@@ -17,57 +17,16 @@ public class PathFinder {
 
     /**
      * Finds a one-way path from a start point to an end point, using weighted A* search. The method
-     * returns a list of PathStep objects, each of which represents a move to be made by the drone.
-     * @param start The start point of the path.
-     * @param end   The end point of the path.
+     * returns a list of Node objects, each of which represents a point on the path (seperated by 1 drone move
+     * length / 0.00015 degrees).
+     * @param startPoint The start point of the path.
+     * @param endPoint  The end point of the path.
      * @param startTime The time at which the drone started calculating paths.
-     * @return An ArrayList of LngLat points representing the path. Null if no path is found.
+     * @return An ArrayList of Node objects representing the path. Null if no path is found.
+     * @throws IOException If the central area points or no-fly zone points could not be fetched from
+     * the REST server.
      */
-    public ArrayList<PathStep> findPath(LngLat start, LngLat end, long startTime) throws IOException {
-        // Priority queue to store the nodes to be explored, sorted by their fCost.
-        PriorityQueue<PathStep> openList = new PriorityQueue<>(Comparator.comparingDouble(PathStep::getFCost));
-        ArrayList<PathStep> closedList = new ArrayList<>();
-        PathStep startPathStep = new PathStep(start, end, System.nanoTime() - startTime);
-        openList.add(startPathStep);
-
-        while (openList.size() > 0) { // While there are still valid steps to explore.
-            PathStep curPathStep = openList.poll();
-            closedList.add(curPathStep);
-            // Traverse all the directions we can move towards from the current position.
-            for (CompassDirection compassDirection : CompassDirection.values()) {
-                LngLat neighbourLngLat = curPathStep.getToLngLat().nextPosition(compassDirection);
-                PathStep neighbourStep = new PathStep(neighbourLngLat, curPathStep, compassDirection.getAngle(), end, System.nanoTime() - startTime);
-                boolean stepCrossesNfzBoundary = pathCrossesNoFlyZone(curPathStep.getToLngLat(), neighbourLngLat);
-                boolean stepCrossesCaBoundary = pathCrossesCentralAreaBoundary(curPathStep.getToLngLat(), neighbourLngLat);
-
-                // Skip moves/steps/nodes that enter a no-fly zone or cross the central area boundary, if already crossed.
-                if (stepCrossesNfzBoundary || (stepCrossesCaBoundary && neighbourStep.isCaBoundaryCrossed())) {
-                    continue;
-                } else if (stepCrossesCaBoundary) { // If the next step crosses the central area boundary, set the flag to true.
-                    neighbourStep.setCaBoundaryCrossed(true);
-                }
-
-                // If the next step takes us to the close to the end (target) point, return the generated path.
-                if (neighbourStep.getToLngLat().closeTo(end)) {
-                    return generatePathFromEnd(neighbourStep);
-                }
-
-                // If a step takes us to an unexplored point/coordinate, add it to the open list to be explored.
-                if (!closedList.contains(neighbourStep)) {
-                    openList.add(neighbourStep);
-                } else if (closedList.get(closedList.indexOf(neighbourStep)).getFCost() > neighbourStep.getFCost()) {
-                    // If a step that takes us to a point has already been explored, but a better
-                    // path (lower f cost) is found, explore the new step with the lower cost.
-                    closedList.remove(neighbourStep);
-                    openList.add(neighbourStep);
-                }
-            }
-        }
-        return null; // No valid path found.
-    }
-
-
-    public ArrayList<Node> calculatePath(LngLat startPoint, LngLat endPoint, long startTime) throws IOException {
+    public ArrayList<Node> findPath(LngLat startPoint, LngLat endPoint, long startTime) throws IOException {
         // Priority queue to store the nodes to be explored, sorted by their F cost.
         PriorityQueue<Node> openList = new PriorityQueue<>(Comparator.comparingDouble(Node::getFCost));
         ArrayList<Node> closedList = new ArrayList<>();
@@ -110,22 +69,11 @@ public class PathFinder {
     }
 
     /**
-     * Method to generate a path consisting of individual steps, after a final step reaches close to its
-     * target, by traversing each step and its parent, until the first step in the path.
-     * @param endPathStep The final step that reaches close to the target point.
-     * @return An ArrayList of PathStep objects representing the steps/moves to get from one point to another.
+     * Method to generate a path consisting of individual Node points, after a final step reaches close to its
+     * target, by traversing each step and its parent, until the first point in the path.
+     * @param endNode The final step that reaches close to the target point.
+     * @return An ArrayList of Node objects, each representing a point on the path.
      */
-    private ArrayList<PathStep> generatePathFromEnd(PathStep endPathStep) {
-        ArrayList<PathStep> path = new ArrayList<>();
-        PathStep curStep = endPathStep;
-        while (curStep.getPrevStep() != null) {
-            path.add(0, curStep);
-            curStep = curStep.getPrevStep();
-        }
-        return path;
-    }
-
-
     private ArrayList<Node> generatePathFromEnd(Node endNode) {
         ArrayList<Node> path = new ArrayList<>();
         Node curNode = endNode;
@@ -137,7 +85,7 @@ public class PathFinder {
     }
 
     /**
-     * Checks if the path between two points crosses a no-fly zone boundary.
+     * Checks if a straight line path between two points crosses a no-fly zone boundary.
      * @param curLngLat       start of the path.
      * @param neighbourLngLat end of the path.
      * @return True if the path crosses a no-fly zone boundary, false otherwise.
@@ -159,7 +107,7 @@ public class PathFinder {
     }
 
     /**
-     * Method to check if a path crosses the central area boundary.
+     * Method to check if a straight line path between two points the central area boundary.
      * @param curLngLat       start of the path.
      * @param neighbourLngLat end of the path.
      * @return True if the path crosses the central area boundary, false otherwise.

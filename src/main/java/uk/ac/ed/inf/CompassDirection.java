@@ -27,7 +27,6 @@ public enum CompassDirection {
 
     /**
      * Enum constructor.
-     * 
      * @param angle angle (in degrees) between the direction represented by the CompassDirection enum
      *              constant and the x-axis (east direction).
      */
@@ -38,7 +37,6 @@ public enum CompassDirection {
     /**
      * Method to get the angle (in degrees) formed between the direction represented
      * by the CompassDirection enum constant and the x-axis (east direction).
-     * 
      * @return The angle between x-axis (east direction) and the direction
      *         represented by the enum.
      */

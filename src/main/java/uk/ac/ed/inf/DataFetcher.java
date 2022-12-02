@@ -95,7 +95,7 @@ public class DataFetcher {
 
     /**
      * Method to get an ArrayList of LngLat objects representing the vertices of the
-     * central area from the REST server
+     * central area from the REST server.
      * @return An ArrayList of LngLat objects representing the vertices of the central area.
      * @throws IOException If the REST server is not available or base url is invalid.
      */
