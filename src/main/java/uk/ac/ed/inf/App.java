@@ -52,9 +52,10 @@ public class App {
             System.out.println("Delivering orders for date: " + dataFetcher.getDate());
             drone.deliverOrders();
             printDeliveryInformation(drone); // Deliver orders for the given date.
-            JsonMaker.createDeliveriesJson(); // Create deliveries JSON file.
-            JsonMaker.createFlightPathJson(drone.getFullDronePath()); // Create JSON file for flight path.
-            JsonMaker.createDroneGeoJson(drone.getFullDronePath()); // Create GeoJSON file for drone flight path.
+//            JsonMaker.createDeliveriesJson(); // Create deliveries JSON file.
+//            JsonMaker.createFlightPathJson(drone.getFullDronePath()); // Create JSON file for flight path.
+//            JsonMaker.createDroneGeoJson(drone.getFullDronePath()); // Create GeoJSON file for drone flight path.
+            JsonMaker.createDronePathJson(drone.getAllDroneMoves()); // Create JSON file for drone flight path
         } catch (Exception e) {
             e.printStackTrace();
         }

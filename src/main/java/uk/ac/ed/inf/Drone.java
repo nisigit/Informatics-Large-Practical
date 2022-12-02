@@ -38,6 +38,8 @@ public class Drone {
     // List storing all the steps taken by the drone for the current day.
     private ArrayList<PathStep> fullDronePath;
 
+    private ArrayList<DroneMove> allDroneMoves;
+
     // PathFinder object to plan a route between two locations.
     private final PathFinder pathFinder;
 
@@ -52,6 +54,7 @@ public class Drone {
         this.currentPos = this.startPos;
         this.movesRemaining = Drone.MAX_DRONE_MOVES;
         this.fullDronePath = new ArrayList<>();
+        this.allDroneMoves = new ArrayList<>();
         this.pathFinder = new PathFinder();
         this.startTime = System.nanoTime();
     }
@@ -69,11 +72,12 @@ public class Drone {
             Order order = orderPriorityQueue.poll();
 
             // Full path to collect the order from the restaurant and deliver it to Appleton.
-            ArrayList<PathStep> fullOrderPath =
-                    this.getFullDeliveryPath(order);
+            ArrayList<DroneMove> fullOrderPath = this.getFullOrderPath(order);
+//            ArrayList<PathStep> fullOrderPath = this.getFullDeliveryPath(order);
             // If drone has enough moves to deliver the order, then deliver it.
             if (fullOrderPath.size() <= this.movesRemaining) {
-                deliverOrder(order, fullOrderPath);
+                delOrder(order, fullOrderPath);
+//                deliverOrder(order, fullOrderPath);
             } else { // drone does not have enough battery to deliver any more orders.
                 break;
             }
@@ -95,6 +99,17 @@ public class Drone {
             this.movesRemaining--;
         }
         order.setOrderOutcome(OrderOutcome.Delivered);
+        System.out.println("Moves remaining: " + this.movesRemaining);
+    }
+
+    private void delOrder(Order order, ArrayList<DroneMove> fullOrderPath) {
+        for (DroneMove droneMove : fullOrderPath) {
+            this.allDroneMoves.add(droneMove);
+            this.currentPos = droneMove.toLngLat();
+            this.movesRemaining--;
+        }
+        order.setOrderOutcome(OrderOutcome.Delivered);
+        System.out.println("Moves remaining: " + this.movesRemaining);
     }
 
     /**
@@ -118,6 +133,43 @@ public class Drone {
         fullOrderPath.addAll(pathToRestaurant);
         fullOrderPath.addAll(pathToStart);
         return fullOrderPath;
+    }
+
+    private ArrayList<DroneMove> getFullOrderPath(Order order) throws IOException {
+        LngLat restLocation = order.getRestaurant().getLngLat();
+        ArrayList<Node> pointsToRestaurant = this.pathFinder.calculatePath(this.currentPos, restLocation, this.startTime);
+        ArrayList<DroneMove> collectionMoves = this.createDroneSteps(pointsToRestaurant, order);
+
+        LngLat collectionPoint = pointsToRestaurant.get(pointsToRestaurant.size() - 1).getLngLat();
+
+        ArrayList<Node> pointsToStart = this.pathFinder.calculatePath(collectionPoint, this.startPos, this.startTime);
+        ArrayList<DroneMove> deliveryMoves = this.createDroneSteps(pointsToStart, order);
+
+        ArrayList<DroneMove> fullOrderPath = new ArrayList<>();
+        fullOrderPath.addAll(collectionMoves);
+        fullOrderPath.addAll(deliveryMoves);
+        return fullOrderPath;
+    }
+
+    private ArrayList<DroneMove> createDroneSteps(ArrayList<Node> pathPoints, Order order) {
+        ArrayList<DroneMove> droneMoves = new ArrayList<>();
+        for (int i = 0; i < pathPoints.size() - 1; i++) {
+            Node fromNode = pathPoints.get(i);
+            Node toNode = pathPoints.get(i + 1);
+            DroneMove droneMove = new DroneMove(fromNode.getLngLat(), toNode.getLngLat(), toNode.getAngleFromParent(),
+                    System.nanoTime() - this.startTime, order.getOrderNo());
+            droneMoves.add(droneMove);
+        }
+        addHover(droneMoves);
+        return droneMoves;
+    }
+
+    private void addHover(ArrayList<DroneMove> droneMoves) {
+        DroneMove lastMove = droneMoves.get(droneMoves.size() - 1);
+        LngLat hoverPoint = lastMove.toLngLat();
+        DroneMove hoverMove = new DroneMove(hoverPoint, hoverPoint, null,
+                System.nanoTime() - this.startTime, lastMove.orderNo());
+        droneMoves.add(hoverMove);
     }
 
     /**
@@ -144,7 +196,8 @@ public class Drone {
         Order[] orders = DataFetcher.getInstance().getOrders();
         for (Order order : orders) {
             if (order.isOrderValid()) {
-                ArrayList<PathStep> fullDeliveryPath = this.getFullDeliveryPath(order);
+                ArrayList<DroneMove> fullDeliveryPath = this.getFullOrderPath(order);
+//                ArrayList<PathStep> fullDeliveryPath = this.getFullDeliveryPath(order);
                 order.setMovesToDeliver(fullDeliveryPath.size());
                 orderPriorityQueue.add(order);
             }
@@ -167,5 +220,9 @@ public class Drone {
      */
     public ArrayList<PathStep> getFullDronePath() {
         return this.fullDronePath;
+    }
+
+    public ArrayList<DroneMove> getAllDroneMoves() {
+        return allDroneMoves;
     }
 }

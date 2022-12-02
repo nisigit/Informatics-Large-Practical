@@ -83,6 +83,23 @@ public class JsonMaker {
         writeToFile(filePath, flightPath);
     }
 
+    public static void createDronePathJson(ArrayList<DroneMove> allDroneMoves) throws IOException {
+        ArrayNode flightPath = OBJECT_MAPPER.createArrayNode();
+        for (DroneMove droneMove : allDroneMoves) {
+            ObjectNode moveNode = OBJECT_MAPPER.createObjectNode();
+            moveNode.put("orderNo", droneMove.orderNo());
+            moveNode.put("fromLongitude", droneMove.fromLngLat().lng());
+            moveNode.put("fromLatitude", droneMove.fromLngLat().lat());
+            moveNode.put("angle", droneMove.stepDirectionAngle());
+            moveNode.put("toLongitude", droneMove.toLngLat().lng());
+            moveNode.put("toLatitude", droneMove.toLngLat().lat());
+            moveNode.put("ticksSinceStartOfCalculation", droneMove.ticksSinceStartOfCalculation());
+            flightPath.add(moveNode);
+        }
+        String filePath = "dp-" + DataFetcher.getInstance().getDate() + ".json";
+        writeToFile(filePath, flightPath);
+    }
+
     public static void createDroneGeoJson(ArrayList<PathStep> fullDronePath) throws IOException {
         ObjectNode featureCollection = OBJECT_MAPPER.createObjectNode();
         ArrayNode features = OBJECT_MAPPER.createArrayNode();

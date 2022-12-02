@@ -66,6 +66,49 @@ public class PathFinder {
         return null; // No valid path found.
     }
 
+
+    public ArrayList<Node> calculatePath(LngLat startPoint, LngLat endPoint, long startTime) throws IOException {
+        // Priority queue to store the nodes to be explored, sorted by their F cost.
+        PriorityQueue<Node> openList = new PriorityQueue<>(Comparator.comparingDouble(Node::getFCost));
+        ArrayList<Node> closedList = new ArrayList<>();
+        Node startNode = new Node(startPoint, endPoint, System.nanoTime() - startTime);
+        openList.add(startNode);
+
+        while (openList.size() > 0) {
+            Node curNode = openList.poll(); // Exploring the node with the lowest F cost.
+            closedList.add(curNode);
+            for (CompassDirection direction : CompassDirection.values()) {
+                LngLat neighbourLngLat = curNode.getLngLat().nextPosition(direction);
+                Node neighbourNode = new Node(neighbourLngLat, curNode, direction.getAngle(), System.nanoTime() - startTime);
+                boolean stepCrossesNfzBoundary = pathCrossesNoFlyZone(curNode.getLngLat(), neighbourLngLat);
+                boolean stepCrossesCaBoundary = pathCrossesCentralAreaBoundary(curNode.getLngLat(), neighbourLngLat);
+
+                // Skip moves/steps/nodes that enter a no-fly zone or cross the central area boundary, if already crossed.
+                if (stepCrossesNfzBoundary || (stepCrossesCaBoundary && neighbourNode.isCaBoundaryCrossed())) {
+                    continue;
+                } else if (stepCrossesCaBoundary) { // If the next step crosses the central area boundary, set the flag to true.
+                    neighbourNode.setIsCaBoundaryCrossed(true);
+                }
+
+                // If the next step takes us to the close to the end (target) point, return the generated path.
+                if (neighbourNode.getLngLat().closeTo(endPoint)) {
+                    return generatePathFromEnd(neighbourNode);
+                }
+
+                // If a step takes us to an unexplored point/coordinate, add it to the open list to be explored.
+                if (!closedList.contains(neighbourNode)) {
+                    openList.add(neighbourNode);
+                } else if (closedList.get(closedList.indexOf(neighbourNode)).getFCost() > neighbourNode.getFCost()) {
+                    // If a step that takes us to a point has already been explored, but a better
+                    // path (lower f cost) is found, explore the new step with the lower cost.
+                    closedList.remove(neighbourNode);
+                    openList.add(neighbourNode);
+                }
+            }
+        }
+        return null; // No valid path found between the start and end points.
+    }
+
     /**
      * Method to generate a path consisting of individual steps, after a final step reaches close to its
      * target, by traversing each step and its parent, until the first step in the path.
@@ -78,6 +121,17 @@ public class PathFinder {
         while (curStep.getPrevStep() != null) {
             path.add(0, curStep);
             curStep = curStep.getPrevStep();
+        }
+        return path;
+    }
+
+
+    private ArrayList<Node> generatePathFromEnd(Node endNode) {
+        ArrayList<Node> path = new ArrayList<>();
+        Node curNode = endNode;
+        while (curNode.getParent() != null) {
+            path.add(0, curNode);
+            curNode = curNode.getParent();
         }
         return path;
     }
