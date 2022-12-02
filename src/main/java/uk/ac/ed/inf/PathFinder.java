@@ -39,14 +39,8 @@ public class PathFinder {
             for (CompassDirection direction : CompassDirection.values()) {
                 LngLat neighbourLngLat = curNode.getLngLat().nextPosition(direction);
                 Node neighbourNode = new Node(neighbourLngLat, curNode, direction.getAngle(), System.nanoTime() - startTime);
-                boolean stepCrossesNfzBoundary = pathCrossesNoFlyZone(curNode.getLngLat(), neighbourLngLat);
-                boolean stepCrossesCaBoundary = pathCrossesCentralAreaBoundary(curNode.getLngLat(), neighbourLngLat);
-
-                // Skip moves/steps/nodes that enter a no-fly zone or cross the central area boundary, if already crossed.
-                if (stepCrossesNfzBoundary || (stepCrossesCaBoundary && neighbourNode.isCaBoundaryCrossed())) {
+                if (!isNodeValid(curNode, neighbourNode)) {
                     continue;
-                } else if (stepCrossesCaBoundary) { // If the next step crosses the central area boundary, set the flag to true.
-                    neighbourNode.setIsCaBoundaryCrossed(true);
                 }
 
                 // If the next step takes us to the close to the end (target) point, return the generated path.
@@ -66,6 +60,34 @@ public class PathFinder {
             }
         }
         return null; // No valid path found between the start and end points.
+    }
+
+    /**
+     * Method to check if a neighbour node of a node is valid in the path finding algorithm. A neighbour node is
+     * invalid if the straight line between the parent node and the neighbour node cross the central area boundary
+     * after it has already been crossed once (in a one-way path), or if the straight line between the parent node
+     * and the neighbour node crosses a no-fly zone boundary.
+     * @param parentNode The parent node of the neighbour node.
+     * @param neighbourNode The neighbour node to be checked.
+     * @return True if the neighbour node is valid, false otherwise.
+     * @throws IOException If the central area points or no-fly zone points could not be fetched from the REST server.
+     */
+    private boolean isNodeValid(Node parentNode, Node neighbourNode) throws IOException {
+        boolean moveCrossesNfz = pathCrossesNoFlyZone(parentNode.getLngLat(), neighbourNode.getLngLat());
+        boolean moveCrossesCaBoundary = pathCrossesCentralAreaBoundary(parentNode.getLngLat(), neighbourNode.getLngLat());
+
+        if (moveCrossesNfz) { // A move/step is invalid if it crosses a no-fly zone boundary.
+            return false;
+        }
+
+        // If the move crosses the central area boundary, set the flag in the neighbour node.
+        if (moveCrossesCaBoundary) {
+            neighbourNode.setIsCaBoundaryCrossed(true);
+        }
+
+        /* If the central area boundary has already been crossed, and the move/step crosses the boundary again,
+           the move is invalid. */
+        return !(parentNode.isCaBoundaryCrossed() && moveCrossesCaBoundary);
     }
 
     /**

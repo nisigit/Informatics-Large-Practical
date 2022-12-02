@@ -40,7 +40,6 @@ public class App {
         try {
             LocalDate date = LocalDate.parse(args[0]);
             String baseUrl = args[1];
-            System.out.println(baseUrl);
 
             // Setting the base url of the REST server in the ResponseFetcher class, and the date for which
             // data is being fetched.

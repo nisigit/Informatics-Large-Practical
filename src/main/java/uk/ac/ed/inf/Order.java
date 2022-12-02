@@ -100,14 +100,17 @@ public class Order {
      */
     private int getDeliveryCost() {
         if (this.orderRestaurant == null) {
-            if (this.orderOutcome == null) {
+            if (this.orderOutcome == null) { // Order validity needs to be checked to set the order's restaurant.
                 throw new IllegalArgumentException("Check order validity before getting delivery cost");
-            } else {
+            } else { // Order is invalid, so full cost cannot be calculated.
                 throw new IllegalArgumentException("Cannot calculate delivery cost for invalid order.");
             }
         }
-        int deliveryCost = 100; // Delivery cost is £1 (100 pence).
+        int deliveryCost = 100; // Cost of delivering is £1 (100 pence).
+
+        // Get the HashMap representing the restaurant's menu items and their prices.
         HashMap<String, Integer> restaurantMenu = this.orderRestaurant.getMenuItemPrices();
+        // Loop to add the price of each item in the order to the total.
         for (String item : this.orderItems) {
             deliveryCost += restaurantMenu.get(item);
         }
@@ -126,7 +129,8 @@ public class Order {
         for (Restaurant restaurant : participants) {
             HashMap<String, Integer> restaurantMenu = restaurant.getMenuItemPrices();
             if (restaurantMenu.keySet().containsAll(Arrays.asList(this.orderItems))) {
-                this.orderRestaurant = restaurant;
+                // One restaurant's menu contains all the items in the order, so the items are valid.
+                this.orderRestaurant = restaurant; // Set the restaurant of the order.
                 return true;
             }
             allPizzas.addAll(restaurantMenu.keySet());
@@ -153,19 +157,24 @@ public class Order {
             return false;
         }
 
+        // Card validation.
         if (!(this.isCardCvvValid() && this.isCardExpiryValid() && this.isCardNumberValid())) {
             return false;
         }
 
+        // Check if all items are valid and ordered from the same restaurant.
         Restaurant[] participants = DataFetcher.getInstance().getRestaurants();
         if (!this.areItemsValid(participants)) {
             return false;
         }
 
+        // Check if the calculated delivery cost is same as the delivery cost fetched from the REST server.
         if (this.getDeliveryCost() != this.priceTotalInPence) {
             this.orderOutcome = OrderOutcome.InvalidTotal;
             return false;
         }
+
+        // All checks passed, order is valid.
         this.orderOutcome = OrderOutcome.ValidButNotDelivered;
         return true;
     }

@@ -43,7 +43,7 @@ public class JsonMaker {
 
     /**
      * Method to create/overwrite a JSON file and populating it with details about the
-     * deliveries made by the drone
+     * all the orders delivered by the drone on a given day.
      * @throws IOException if the file cannot be created/overwritten.
      */
     public static void createDeliveriesJson() throws IOException {
@@ -63,6 +63,12 @@ public class JsonMaker {
         writeToFile(writePath, deliveries);
     }
 
+    /**
+     * Method to create/overwrite a JSON file and populating it with details about all the
+     * moves made by the drone on a given day.
+     * @param allDroneMoves ArrayList of DroneMove objects representing all the moves made by the drone.
+     * @throws IOException if the file cannot be created/overwritten.
+     */
     public static void createFlightPathJson(ArrayList<DroneMove> allDroneMoves) throws IOException {
         ArrayNode flightPath = OBJECT_MAPPER.createArrayNode();
         for (DroneMove droneMove : allDroneMoves) {
@@ -80,6 +86,13 @@ public class JsonMaker {
         writeToFile(filePath, flightPath);
     }
 
+    /**
+     * Method to create/overwrite a GeoJSON file and populating it with a FeatureCollection
+     * containing the drone's flight path as a LineString feature
+     * @param allDroneMoves ArrayList of DroneMove objects representing all the moves made by the drone
+     *                      in a given day.
+     * @throws IOException If the output file cannot be created/overwritten.
+     */
     public static void createDroneGeoJson(ArrayList<DroneMove> allDroneMoves) throws IOException {
         ArrayNode coordinates = OBJECT_MAPPER.createArrayNode();
         for (DroneMove droneMove : allDroneMoves) {
