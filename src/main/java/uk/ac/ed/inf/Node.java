@@ -10,7 +10,7 @@ import java.util.Objects;
 public class Node {
 
     /**
-     * Weighting factor for the heuristic (h cost - estimated number of moves to the target point)
+     * Weighting factor for the heuristic (h cost - estimated distance to the target point)
      * in the weighted A* search algorithm.
      */
     private static final double H_WEIGHT = 1.5;
@@ -24,7 +24,7 @@ public class Node {
     // Field to store the angle (w.r.t East) travelled to get from the parent node to this node.
     private final Double angleFromParent;
 
-    // Field to store the number of steps taken to get from the start node to this node.
+    // Field to store the number of nodes between the start node of the path and this node.
     private final int stepsFromStart;
 
     // Field to store whether the path from the start node to this node crosses the CA boundary.
@@ -140,16 +140,18 @@ public class Node {
 
     /**
      * Method to get the weighted F cost of this node in the A* Search pathfinding algorithm. The
-     * cost will be in terms of drone moves, where the G cost is the number of moves taken to reach
-     * this node and the H cost is the estimated number of moves required to reach the target node.
+     * cost will be in terms of distance, where the G cost is the distance covered from the start to
+     * reach this node and the H cost is the estimated distance to the target node.
      * @return The weighted F cost of this node in the A* Search pathfinding algorithm.
      */
     public double getFCost() {
-        double gCost = this.stepsFromStart; // Number of moves from the start node to this node.
+        // Distance travelled to reach this node in the path.
+        double gCost = this.stepsFromStart * Drone.MOVE_LENGTH;
 
-        // Estimated steps to get from this node to the target node (Euclidean_distance / move_length).
-        double hCost = this.lngLat.distanceTo(this.targetLngLat) / Drone.MOVE_LENGTH;
-        return gCost + H_WEIGHT * hCost;
+        // Estimated distance from this node to the target node
+        double hCost = this.lngLat.distanceTo(this.targetLngLat);
+
+        return gCost + (H_WEIGHT * hCost);
     }
 
     @Override
