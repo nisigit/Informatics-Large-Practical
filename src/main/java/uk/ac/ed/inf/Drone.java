@@ -36,7 +36,7 @@ public class Drone {
     private int movesRemaining;
 
     // List storing all the moves made by the drone in the day.
-    private ArrayList<DroneMove> allDroneMoves;
+    private final ArrayList<DroneMove> allDroneMoves;
 
     // PathFinder object to plan a route between two locations.
     private final PathFinder pathFinder;

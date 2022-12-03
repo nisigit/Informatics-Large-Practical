@@ -39,11 +39,11 @@ public class PathFinder {
             for (CompassDirection direction : CompassDirection.values()) {
                 LngLat neighbourLngLat = curNode.getLngLat().nextPosition(direction);
                 Node neighbourNode = new Node(neighbourLngLat, curNode, direction.getAngle(), System.nanoTime() - startTime);
-                if (!isNodeValid(curNode, neighbourNode)) {
+                if (!isNodeValid(curNode, neighbourNode)) { // Skip invalid nodes.
                     continue;
                 }
 
-                // If the next step takes us to the close to the end (target) point, return the generated path.
+                // If the next node is to the close to the end (target) point, return the generated path.
                 if (neighbourNode.getLngLat().closeTo(endPoint)) {
                     return generatePathFromEnd(neighbourNode);
                 }
@@ -59,7 +59,7 @@ public class PathFinder {
                 }
             }
         }
-        return null; // No valid path found between the start and end points.
+        return null; // No valid route found between the start and end points.
     }
 
     /**

@@ -289,4 +289,5 @@ public class Order {
     public int getPriceTotalInPence() {
         return this.priceTotalInPence;
     }
+
 }
