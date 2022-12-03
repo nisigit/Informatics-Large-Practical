@@ -59,8 +59,8 @@ public class JsonMaker {
                 deliveries.add(orderNode);
             }
         }
-        String writePath = "deliveries-" + dataFetcher.getDate() + ".json";
-        writeToFile(writePath, deliveries);
+        String filePath = "resultfiles/deliveries-" + dataFetcher.getDate() + ".json";
+        writeToFile(filePath, deliveries);
     }
 
     /**
@@ -82,7 +82,7 @@ public class JsonMaker {
             moveNode.put("ticksSinceStartOfCalculation", droneMove.ticksSinceStartOfCalculation());
             flightPath.add(moveNode);
         }
-        String filePath = "flightpath-" + DataFetcher.getInstance().getDate() + ".json";
+        String filePath = "resultfiles/flightpath-" + DataFetcher.getInstance().getDate() + ".json";
         writeToFile(filePath, flightPath);
     }
 
@@ -119,8 +119,8 @@ public class JsonMaker {
         featureCollection.put("type", "FeatureCollection");
         featureCollection.set("features", features);
 
-        String fileName = "drone-" + DataFetcher.getInstance().getDate() + ".geojson";
-        writeToFile(fileName, featureCollection);
+        String filePath = "resultfiles/drone-" + DataFetcher.getInstance().getDate() + ".geojson";
+        writeToFile(filePath, featureCollection);
     }
 
 }
