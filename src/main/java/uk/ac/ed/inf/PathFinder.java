@@ -99,7 +99,7 @@ public class PathFinder {
     private ArrayList<Node> generatePathFromEnd(Node endNode) {
         ArrayList<Node> path = new ArrayList<>();
         Node curNode = endNode;
-        while (curNode.getParent() != null) {
+        while (curNode != null) {
             path.add(0, curNode);
             curNode = curNode.getParent();
         }

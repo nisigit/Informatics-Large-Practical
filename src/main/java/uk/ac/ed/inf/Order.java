@@ -48,7 +48,6 @@ public class Order {
     // Restaurant instance of the restaurant that the order is from.
     private Restaurant orderRestaurant;
 
-
     // Field to store the outcome of the order.
     private OrderOutcome orderOutcome;
 
@@ -92,6 +91,23 @@ public class Order {
      */
     public void setMovesToDeliver(int movesToDeliver) {
         this.movesToDeliver = movesToDeliver;
+    }
+
+
+    /**
+     * Method to get the order number of the order.
+     * @return String representing the order number of the order.
+     */
+    public String getOrderNo() {
+        return this.orderNo;
+    }
+
+    /**
+     * Method to get the price total in pence of the order, received from the REST server.
+     * @return Integer representing the price total in pence of the order (from the REST server).
+     */
+    public int getPriceTotalInPence() {
+        return this.priceTotalInPence;
     }
 
     /**
@@ -274,20 +290,5 @@ public class Order {
         return this.orderRestaurant;
     }
 
-    /**
-     * Method to get the order number of the order.
-     * @return String representing the order number of the order.
-     */
-    public String getOrderNo() {
-        return this.orderNo;
-    }
-
-    /**
-     * Method to get the price total in pence of the order, received from the REST server.
-     * @return Integer representing the price total in pence of the order (from the REST server).
-     */
-    public int getPriceTotalInPence() {
-        return this.priceTotalInPence;
-    }
 
 }
