@@ -154,16 +154,26 @@ public class Node {
         return gCost + (H_WEIGHT * hCost);
     }
 
+    /**
+     * Overridden equals method to check if two Node objects are equal. Two Node objects are equal if
+     * they have the same location coordinates.
+     * @param o The object to compare this Node object to.
+     * @return Whether the two Node objects are equal.
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Node node = (Node) o;
-        return Objects.equals(parent, node.parent) && Objects.equals(lngLat, node.lngLat);
+        return Objects.equals(lngLat, node.lngLat);
     }
 
+    /**
+     * Overridden hashCode method to generate a hash code for this Node object.
+     * @return The hash code for this Node object.
+     */
     @Override
     public int hashCode() {
-        return Objects.hash(parent, lngLat);
+        return Objects.hash(lngLat);
     }
 }
