@@ -61,6 +61,7 @@ public class Drone {
      * Method to simulate delivering orders by a drone on a given day. The method prioritises
      * orders based on the number of moves required to deliver them, and then only delivers
      * an order if the drone has enough moves remaining to do so.
+     * @throws IOException, if the orders could not be fetched from the REST server.
      */
     public void deliverOrders() throws IOException {
         // Get valid orders prioritised by fewer moves required to deliver them.
@@ -109,11 +110,13 @@ public class Drone {
      */
     private ArrayList<DroneMove> getFullOrderPath(Order order) throws IOException {
         LngLat restLocation = order.getRestaurant().getLngLat();
+        // Path to go from drone's current location to restaurant and collect the order.
         ArrayList<Node> pointsToRestaurant = this.pathFinder.findPath(this.currentPos, restLocation, this.startTime);
         ArrayList<DroneMove> collectionMoves = this.createDroneSteps(pointsToRestaurant, order);
 
         LngLat collectionPoint = pointsToRestaurant.get(pointsToRestaurant.size() - 1).getLngLat();
 
+        // Path to go from order's collection point to drone's start position and deliver the order.
         ArrayList<Node> pointsToStart = this.pathFinder.findPath(collectionPoint, this.startPos, this.startTime);
         ArrayList<DroneMove> deliveryMoves = this.createDroneSteps(pointsToStart, order);
 
@@ -166,12 +169,14 @@ public class Drone {
      * @throws IOException If data from the REST server cannot be read.
      */
     private PriorityQueue<Order> getOrderQueue() throws IOException {
+        // Prioritise orders by fewer moves required to deliver them.
         PriorityQueue<Order> orderPriorityQueue =
                 new PriorityQueue<>(Comparator.comparingInt(Order::getMovesToDeliver));
         Order[] orders = DataFetcher.getInstance().getOrders();
         for (Order order : orders) {
             if (order.isOrderValid()) {
                 ArrayList<DroneMove> fullDeliveryPath = this.getFullOrderPath(order);
+                // Approximate number of moves required to deliver the order.
                 order.setMovesToDeliver(fullDeliveryPath.size());
                 orderPriorityQueue.add(order);
             }
