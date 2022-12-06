@@ -43,7 +43,7 @@ public class JsonMaker {
 
     /**
      * Method to create/overwrite a JSON file and populating it with details about the
-     * all the orders delivered by the drone on a given day.
+     * all the orders delivered and not delivered by the drone on a given day.
      * @throws IOException if the file cannot be created/overwritten.
      */
     public static void createDeliveriesJson() throws IOException {
@@ -51,13 +51,11 @@ public class JsonMaker {
         ArrayNode deliveries = OBJECT_MAPPER.createArrayNode();
         Order[] orders = dataFetcher.getOrders();
         for (Order order : orders) {
-            if (order.getOrderOutcome() == OrderOutcome.Delivered) {
-                ObjectNode orderNode = OBJECT_MAPPER.createObjectNode();
-                orderNode.put("orderNo", order.getOrderNo());
-                orderNode.put("outcome", order.getOrderOutcome().toString());
-                orderNode.put("costInPence", order.getPriceTotalInPence());
-                deliveries.add(orderNode);
-            }
+            ObjectNode orderNode = OBJECT_MAPPER.createObjectNode();
+            orderNode.put("orderNo", order.getOrderNo());
+            orderNode.put("outcome", order.getOrderOutcome().toString());
+            orderNode.put("costInPence", order.getPriceTotalInPence());
+            deliveries.add(orderNode);
         }
         String filePath = "resultfiles/deliveries-" + dataFetcher.getDate() + ".json";
         writeToFile(filePath, deliveries);
